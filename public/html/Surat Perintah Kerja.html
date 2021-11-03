@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Surat Perintah Kerja</title>
+        <style>
+            .halaman{
+                width: 800;
+                height: auto;
+                margin: 10 auto;
+            }
+            #isi{
+                width: auto;
+                height: auto;
+                padding: 80;
+                font-family: 'Times New Roman', Times, serif;
+            }
+            #td{
+                width: 200;
+            }
+            img.center {
+                display: block;
+                margin: 0 auto;
+            }
+            #bodyKu{
+                margin: 40px 30px 30px 40px;
+            }
+            p{
+                font-size: 18;
+                font-family: 'Times New Roman', Times, serif;
+            }
+            h3{
+                font-family: 'Times New Roman', Times, serif;
+            }
+        </style>
+    </head>
+    <body id="bodyKu">
+        <img src="https://drive.google.com/uc?export=view&id=1MFU1bkNdLPD1CiklpYwOgn4aU0fiIB96" width="90%" height="100" class="center"/>
+        <br>
+        <h3 style="text-align: center;">SURAT Perintah KERJA <br>
+        SPK NO: </h3>
+        <p>Yang bertanda tangan di bawah ini, bertindak atas nama perusahaan</p>
+        <table>
+            <tr>
+                <td>Nama</tdi>
+                <td>:</td>
+                <td>{{laporan.namaHRD}}</td>
+            </tr>
+            <tr>
+                <td>NIK</tdi>
+                <td>:</td>
+                <td>{{laporan.nikHRD}}</td>
+            </tr>
+            <tr>
+                <td>Jabatan</tdi>
+                <td>:</td>
+                <td>{{laporan.jabatanHRD}}</td>
+            </tr>
+            <tr>
+                <td>NO.TELP</tdi>
+                <td>:</td>
+                <td>{{laporan.noTelpHRD}}</td>
+            </tr>
+        </table>
+        <p>Dengan ini menugaskan  saudara/ i di bawah ini</p>
+        <table>
+            <tr>
+                <td>Nama</tdi>
+                <td>:</td>
+                <td>{{laporan.namaKaryawan}}</td>
+            </tr>
+            <tr>
+                <td>NIK</tdi>
+                <td>:</td>
+                <td>{{laporan.nikKaryawan}}</td>
+            </tr>
+            <tr>
+                <td>Jabatan</tdi>
+                <td>:</td>
+                <td>{{laporan.jabatanKaryawan}}</td>
+            </tr>
+            <tr>
+                <td>Alamat</tdi>
+                <td>:</td>
+                <td>{{laporan.alamatKaryawan}}</td>
+            </tr>
+        </table>
+        <p>Untuk melaksanakan perjalanan dinas dari {{laporan.dinas}} begitupun sebaliknya, dalam rangka untuk melakukan pemasaran Produk PT. HARAPAN JAYA MULTI BISNIS surat perintah ini berlaku terhitung dari hari/tgl, {{laporan.tanggalMulai}} - {{laporan.tanggalAkhir}}.</p>
+        <p>Apabila penerima tugas,bertindak di luar dari ketentuan surat perintah kerja ini,maka penerima tugas bertindak atas nama pribadi dan segala konsekuensi yang muncul akan tindakan tersebut akan di tanggung secara pribadi oleh penerima tugas.</p>
+        <p>Demikian surat perintah kerja ini kami buat, sekiranya dapat di pergunakan sebagaimana mestinya.</p>
+        <br>
+        <p style="text-align: right; font-weight: bold;">Makassar, {{laporan.tanggalSekarang}}</p>
+        <br><br><br><br>
+        <p style="text-align: right; font-weight: bold;">Sultan Nur<br>
+        Manager HRD</p>
+    </body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Surat Keterangan Kerja</title>
+        <style>
+            .halaman{
+                width: 800;
+                height: auto;
+                margin: 10 auto;
+            }
+            #isi{
+                width: auto;
+                height: auto;
+                padding: 80;
+                font-family: 'Times New Roman', Times, serif;
+            }
+            #td{
+                width: 200;
+            }
+            img.center {
+                display: block;
+                margin: 0 auto;
+            }
+            #bodyKu{
+                margin: 40px 30px 30px 40px;
+            }
+            p{
+                font-size: 18;
+                font-family: 'Times New Roman', Times, serif;
+            }
+            h3{
+                font-family: 'Times New Roman', Times, serif;
+            }
+        </style>
+    </head>
+    <body id="bodyKu">
+        <img src="https://drive.google.com/uc?export=view&id=1MFU1bkNdLPD1CiklpYwOgn4aU0fiIB96" width="90%" height="100" class="center"/>
+        <br>
+        <h3 style="text-align: center;">SURAT KETERANGAN KERJA <br>
+        NO: </h3>
+        <p>Yang bertanda tangan dibawah ini : </p>
+        <table>
+            <tr>
+                <td>Nama</tdi>
+                <td>:</td>
+                <td>{{laporan.namaHRD}}</td>
+            </tr>
+            <tr>
+                <td>Alamat</tdi>
+                <td>:</td>
+                <td>{{laporan.alamatHRD}}</td>
+            </tr>
+            <tr>
+                <td>Jabatan</tdi>
+                <td>:</td>
+                <td>{{laporan.jabatanHRD}}</td>
+            </tr>
+        </table>
+        <p>Dengan ini menerangkan bahwa : </p>
+        <table>
+            <tr>
+                <td>Nama</tdi>
+                <td>:</td>
+                <td>{{laporan.namaKaryawan}}</td>
+            </tr>
+            <tr>
+                <td>Alamat</tdi>
+                <td>:</td>
+                <td>{{laporan.alamatKaryawan}}</td>
+            </tr>
+            <tr>
+                <td>Jabatan</tdi>
+                <td>:</td>
+                <td>{{laporan.jabatanKaryawan}}</td>
+            </tr>
+        </table>
+        <p>Yang bersangkutan benar-benar kerja di perusahaan kami, PT. HARAPAN JAYA MULTI BISNIS terhitung sejak tanggal {{laporan.tanggal}} hingga saat ini dengan jabatan terkahir sebagai Pimpinan Divisi.</p>
+        <p>Demikian surat keterangan ini dibuat dengan sesungguhnya untuk dapat digunakan sebagaimana mestinya.</p>
+        <br>
+        <p style="text-align: right; font-weight: bold;">Makassar, {{laporan.tanggalSekarang}}</p>
+        <br><br><br><br>
+        <p style="text-align: right; font-weight: bold;">Sultan Nur<br>
+        Manager HRD</p>
+    </body>
+</html>
