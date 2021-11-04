@@ -1342,6 +1342,7 @@ module.exports = gql`
       status: Int 
       orderBy: String 
     ): pagePermintaanPromosiJabatan
+    getKaryawanUjiCoba: [Karyawan]
   }
   type Mutation{
     registerUser(
