@@ -12,13 +12,17 @@ module.exports={
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 
-                /*const tingkatan = await Jabatan.findAll({
-                    where: {id: {[Op.like]: user.idJabatan}},
+                const tingkatan = await Jabatan.findOne({
+                    where: {id: {[Op.like]: user.userJWT.idJabatan}},
                 })
-                if(tingkatan[0].tingkatJabatan > 3){
-                    throw new AuthenticationError('Tidak dapat Akses Karena Masalah Tingkatan Jabatan')
-                }*/
-                const listJabatan = await Jabatan.findAll()
+                var listJabatan;
+                if(tingkatan.tingkatJabatan === 1){
+                    listJabatan = await Jabatan.findAll()
+                }else{
+                    listJabatan = await Jabatan.findAll({
+                        where: {tingkatJabatan: {[Op.gte]: 4}}
+                    })
+                }
                 return listJabatan;
             }catch(err){
                 throw err
