@@ -57,7 +57,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'HLaporanSales',
-    tableName: 'HLaporanSales',
+    tableName: 'hlaporansales',
   });
   HLaporanSales.associate = function(models){
     HLaporanSales.hasMany(models.DLaporanSales,{as: 'dLaporanSales', foreignKey: 'HLaporanSalesId'})

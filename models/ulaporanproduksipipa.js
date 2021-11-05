@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'ULaporanProduksiPipa',
-    tableName: 'ULaporanProduksiPipa',
+    tableName: 'ulaporanproduksipipa',
   });
   ULaporanProduksiPipa.associate = function(models){
     ULaporanProduksiPipa.belongsTo(models.DLaporanProduksiPipa,{foreignKey: 'DLaporanProduksiPipaId', as: 'uLaporan'})

@@ -43,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'IndexPenilaian',
-    tableName: 'IndexPenilaian',
+    tableName: 'indexpenilaian',
   });
   IndexPenilaian.associate = function(models){
     IndexPenilaian.hasMany(models.PenilaianHRD,{as: 'indexPenilaianHRD'})

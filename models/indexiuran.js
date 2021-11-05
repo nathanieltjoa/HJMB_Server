@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'IndexIuran',
-    tableName: 'IndexIuran',
+    tableName: 'indexiuran',
   });
   IndexIuran.associate = function(models){
     IndexIuran.hasMany(models.DKontrakIuran,{as: 'dKontakIndexIuran', foreignKey: 'IndexIuranId'})

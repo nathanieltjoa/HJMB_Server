@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Gudang',
-    tableName: 'Gudang',
+    tableName: 'gudang',
   });
   Gudang.associate = function(models){
     Gudang.hasMany(models.HLaporanSekuriti,{as: 'laporanGudang'})

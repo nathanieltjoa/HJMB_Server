@@ -63,7 +63,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'HKontrakKaryawan',
-    tableName: 'HKontrakKaryawan',
+    tableName: 'hkontrakkaryawan',
   });
   HKontrakKaryawan.associate = function(models){
     HKontrakKaryawan.hasMany(models.DKontrakGaji,{as: 'dKontrakGaji'})

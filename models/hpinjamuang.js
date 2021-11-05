@@ -68,7 +68,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'HPinjamUang',
-    tableName: 'HPinjamUang',
+    tableName: 'hpinjamuang',
   });
   HPinjamUang.associate = function(models){
     HPinjamUang.hasMany(models.DPinjamUang,{as: 'dPinjamUang'})

@@ -52,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'LaporanDataDiri',
-    tableName: 'LaporanDataDiri',
+    tableName: 'laporandatadiri',
   });
   return LaporanDataDiri;
 };

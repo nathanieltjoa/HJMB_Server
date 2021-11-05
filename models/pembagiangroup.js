@@ -33,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'PembagianGroup',
-    tableName: 'PembagianGroup'
+    tableName: 'pembagiangroup'
   });
   return PembagianGroup;
 };

@@ -67,7 +67,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'DLaporanCatTegel',
-    tableName: 'DLaporanCatTegel',
+    tableName: 'dlaporancattegel',
   });
   DLaporanCatTegel.associate = function(models){
     DLaporanCatTegel.hasMany(models.ULaporanCatTegel,{as: 'uLaporanCatTegel'})

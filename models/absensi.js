@@ -68,7 +68,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Absensi',
-    tableName: 'Absensi'
+    tableName: 'absensi'
   });
   Absensi.associate = function(models){
     Absensi.belongsTo(models.JamKerja, {foreignKey: 'JamKerjaId',as: 'jamKerja'})

@@ -52,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'HLaporanKetuaStokistPipa',
-    tableName: 'HLaporanKetuaStokistPipa'
+    tableName: 'hlaporanketuastokistpipa'
   });
   HLaporanKetuaStokistPipa.associate = function(models){
     HLaporanKetuaStokistPipa.hasMany(models.DLaporanKetuaStokistPipa,{as: 'dLaporanKetuaSP'})

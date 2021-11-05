@@ -48,7 +48,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'ListKuisioner',
-    tableName: 'listKuisioner',
+    tableName: 'listkuisioner',
   });
   ListKuisioner.associate = function(models){
     ListKuisioner.hasMany(models.ListPertanyaan,{as: 'listPertanyaan'})

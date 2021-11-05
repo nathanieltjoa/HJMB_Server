@@ -48,7 +48,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Izin',
-    tableName: 'Izin',
+    tableName: 'izin',
   });
   Izin.associate = function(models){
     Izin.hasMany(models.Permintaan,{foreignKey: 'IzinId',as: 'listPermintaan'})

@@ -43,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'PenilaianHRD',
-    tableName: 'PenilaianHRD'
+    tableName: 'penilaianhrd'
   });
   PenilaianHRD.associate = function(models){
     PenilaianHRD.belongsTo(models.IndexPenilaian, {foreignKey: 'IndexPenilaianId',as: 'indexPenilaianHRD'})

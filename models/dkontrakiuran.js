@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'DKontrakIuran',
-    tableName: 'DKontrakIuran',
+    tableName: 'dkontrakiuran',
   });
   DKontrakIuran.associate = function(models){
     DKontrakIuran.belongsTo(models.HKontrakKaryawan, {foreignKey: 'HKontrakKaryawanId',as: 'dKontrakIuran'})
