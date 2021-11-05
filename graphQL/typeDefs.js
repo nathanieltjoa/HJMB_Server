@@ -1343,6 +1343,7 @@ module.exports = gql`
       orderBy: String 
     ): pagePermintaanPromosiJabatan
     getKaryawanUjiCoba: [Karyawan]
+    getIzinUjiCoba: [Izin]
   }
   type Mutation{
     registerUser(
