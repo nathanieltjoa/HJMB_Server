@@ -132,6 +132,7 @@ module.exports = gql`
       lembur: String 
       namaKaryawan: String 
       jamKerja: JamKerja
+      karyawan: Karyawan
     }
     type JamKerja{
       id: Int 

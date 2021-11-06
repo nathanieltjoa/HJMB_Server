@@ -82,6 +82,7 @@ module.exports = (sequelize, DataTypes) => {
   });
   Karyawan.associate = function(models){
     Karyawan.belongsTo(models.Jabatan, {foreignKey: 'JabatanId',as: 'jabatan'})
+    Karyawan.hasMany(models.Absensi,{foreignKey: 'idKaryawan',as: 'AbsensiKaryawan'})
     Karyawan.hasMany(models.HPenilaianHRD,{foreignKey: 'idKaryawan',as: 'hPenilaianHRD'})
     Karyawan.hasMany(models.HPenilaianKuisioner,{foreignKey: 'idKaryawan', as: 'hPenilaianKuisioner'})
     Karyawan.hasMany(models.HKontrakKaryawan,{foreignKey: 'idKaryawan', as: 'kontrak'})

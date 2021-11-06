@@ -72,6 +72,7 @@ module.exports = (sequelize, DataTypes) => {
   });
   Absensi.associate = function(models){
     Absensi.belongsTo(models.JamKerja, {foreignKey: 'JamKerjaId',as: 'jamKerja'})
+    Absensi.belongsTo(models.Absensi, {foreignKey: 'idKaryawan',as: 'karyawan'})
   }
   return Absensi;
 };
