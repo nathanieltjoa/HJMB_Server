@@ -408,23 +408,30 @@ module.exports={
             var {idKaryawan} = args;
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
+                var date = new Date();
+                var y = date.getFullYear(), m = date.getMonth();
                 var firstDay = dayjs(new Date(y, m, 1)).format('YYYY-MM-DD');
                 var lastDay = dayjs(new Date(y, m + 1, 0)).format('YYYY-MM-DD');
                 const listAbsensi = await Permintaan.findAll({
                     include: [{
                         model: Izin,
                         as: 'izin',
+                        where: {
+                            namaIzin: {[Op.eq]: "Lembur"}
+                        }
                     }],
                     where: {
                         idPeminta: {[Op.eq]: idKaryawan},
-                        tanggal: {
+                        status: {[Op.or]: [0,3]},
+                        tanggalMulai: {
                             [Op.between]: [firstDay, lastDay]
                         }
                     },
-                    order: [['tanggal','DESC']]
+                    order: [['tanggalMulai','DESC']]
                 })
                 return listAbsensi;
             }catch(err){
+                console.log(err)
                 throw err
             }
         },
