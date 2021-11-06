@@ -412,7 +412,8 @@ module.exports={
                 if(status === 2){
                     var pad = "000";
                     var laporans = await HLaporanArmada.update({
-                        status: status
+                        status: status,
+                        idStokist: user.userJWT.id
                     },{
                         where: {id: {[Op.eq]: id}},
                         transaction: t
