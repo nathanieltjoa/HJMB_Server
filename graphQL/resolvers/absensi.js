@@ -78,6 +78,33 @@ module.exports={
                 throw err
             }
         },
+        getListAbsensiPribadiMaster: async (_, args, { user })=>{
+            var {idKaryawan} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                var firstDay = dayjs(new Date(y, m, 1)).format('YYYY-MM-DD');
+                var lastDay = dayjs(new Date(y, m + 1, 0)).format('YYYY-MM-DD');
+                const listAbsensi = await Absensi.findAll({
+                    include: [{
+                        model: JamKerja,
+                        as: 'jamKerja',
+                    },{
+                        model: Karyawan,
+                        as: 'karyawan',
+                    }],
+                    where: {
+                        idKaryawan: {[Op.eq]: idKaryawan},
+                        tanggal: {
+                            [Op.between]: [firstDay, lastDay]
+                        }
+                    },
+                    order: [['tanggal','DESC']]
+                })
+                return listAbsensi;
+            }catch(err){
+                throw err
+            }
+        },
       },
     Mutation: {
         registerAbsensi: async (_,args, {user})=>{

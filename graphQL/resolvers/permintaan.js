@@ -404,6 +404,30 @@ module.exports={
                 throw err
             }
         },
+        getListLemburPribadiMaster: async (_, args, { user })=>{
+            var {idKaryawan} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                var firstDay = dayjs(new Date(y, m, 1)).format('YYYY-MM-DD');
+                var lastDay = dayjs(new Date(y, m + 1, 0)).format('YYYY-MM-DD');
+                const listAbsensi = await Permintaan.findAll({
+                    include: [{
+                        model: Izin,
+                        as: 'izin',
+                    }],
+                    where: {
+                        idPeminta: {[Op.eq]: idKaryawan},
+                        tanggal: {
+                            [Op.between]: [firstDay, lastDay]
+                        }
+                    },
+                    order: [['tanggal','DESC']]
+                })
+                return listAbsensi;
+            }catch(err){
+                throw err
+            }
+        },
     },
     Mutation: {
         //General

@@ -1344,6 +1344,12 @@ module.exports = gql`
     ): pagePermintaanPromosiJabatan
     getKaryawanUjiCoba: [Karyawan]
     getIzinUjiCoba: [Izin]
+    getListAbsensiPribadiMaster(
+      idKaryawan: Int 
+    ): [Absensi]
+    getListLemburPribadiMaster(
+      idKaryawan: Int 
+    ): [Permintaan]
   }
   type Mutation{
     registerUser(

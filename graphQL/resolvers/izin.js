@@ -8,14 +8,6 @@ const dayjs = require('dayjs');
 
 module.exports={
     Query: {
-        getIzinUjiCoba: async (_, __, { user })=>{
-            try{
-                const listIzin = await Izin.findAll()
-                return listIzin;
-            }catch(err){
-                throw err
-            }
-        },
         getIzin: async (_, __, { user })=>{
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')

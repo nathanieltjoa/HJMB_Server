@@ -435,14 +435,6 @@ module.exports={
                 throw err
             }
         },
-        getKaryawanUjiCoba: async (_,__, {user})=>{
-            try{
-                const karyawan = await Karyawan.findAll()
-                return karyawan;
-            }catch(err){
-                throw err
-            }
-        },
         //HRD
         //Direktur
         //Staf Keuangan
