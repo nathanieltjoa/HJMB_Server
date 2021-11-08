@@ -510,7 +510,7 @@ module.exports={
 
                 if(file === null){
                     permintaans = await Permintaan.create({
-                        id, idPeminta, IzinId, tanggalMulai, tanggalBerakhir, totalHari,keterangan, upload: "-", status, idKetua, idHRD
+                        id, idPeminta, IzinId, tanggalMulai, tanggalBerakhir, totalHari,keterangan, upload: "-", status, idKetua, idHRD, alasan: ''
                     })
                 }else{
                     const { createReadStream, filename, mimetype, encoding } = await file;
@@ -526,7 +526,7 @@ module.exports={
                                 .on("finish",async () => {
                                     var upload = `http://localhost:4000/Izin/${namaFile}`
                                     permintaans = await Permintaan.create({
-                                        id, idPeminta, IzinId, tanggalMulai, tanggalBerakhir, totalHari,keterangan, upload, status, idKetua, idHRD
+                                        id, idPeminta, IzinId, tanggalMulai, tanggalBerakhir, totalHari,keterangan, upload, status, idKetua, idHRD, alasan: ''
                                     })
                                     resolve();
                                 })
