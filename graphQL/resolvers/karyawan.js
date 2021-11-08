@@ -210,7 +210,8 @@ module.exports={
                         as: 'jabatan',
                         where: {
                             tingkatJabatan: {[Op.gte]: 4}
-                        }
+                        },
+                        order: [['id','ASC']]
                     }],
                 }) 
                 return karyawans;
