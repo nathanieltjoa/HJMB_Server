@@ -361,7 +361,7 @@ module.exports={
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
-
+                console.log('masuk');
                 //cek dia Ketua
                 var cekLaporan = await PembagianAnggota.findOne({
                     where: {idKaryawan: {[Op.eq]: user.userJWT.id}}
@@ -380,6 +380,7 @@ module.exports={
                 var idULaporan = "U" + counterTgl;
                 jamLaporan = jamLaporan.slice(0,19);
                 var jamLaporanKu = dayjs(jamLaporan).format('HH:mm')
+                console.log(jamLaporanKu);
                 var status = 1;
                 var keteranganBanding = "";
                 var laporan = null;
@@ -406,7 +407,8 @@ module.exports={
                     id = cekLaporan.id;
                     var cekDLaporan = await DLaporanProduksiPipa.findOne({
                         where: {
-                            jamLaporan: {[Op.eq]: jamLaporanKu}
+                            jamLaporan: {[Op.eq]: jamLaporanKu},
+                            HLaporanProduksiPipaId: {[Op.eq]: id},
                         }
                     })
                     if(cekDLaporan !== null){
@@ -464,7 +466,12 @@ module.exports={
                     const upload = await processUpload(file);
                 }
                 
-                var counterId = 0;
+                cekLaporan = await ULaporanProduksiPipa.count({
+                    where: {
+                        id: {[Op.startsWith]: idULaporan}
+                    }
+                })
+                var counterId = cekLaporan;
                 var counterIdULaporan;
                 await Promise.all(uraian.map(async element => {
                     counterId = counterId + 1;
