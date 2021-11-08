@@ -1,5 +1,5 @@
 const {IndexGaji, IndexIuran, HKontrakKaryawan, DKontrakGaji, DKontrakIuran, Karyawan, Jabatan, 
-    HPembayaranGaji, DPembayaranGaji, HPenilaianHRD, HPenilaianKuisioner, PengaruhNilai, sequelize} = require('../../models');
+    HPembayaranGaji, DPembayaranGaji, HPenilaianHRD, HPenilaianKuisioner, PengaruhNilai, HPinjamUang, DPinjamUang, sequelize} = require('../../models');
 const {Op} = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
@@ -586,20 +586,17 @@ module.exports={
                         tanggalBerakhir: {[Op.gte]: cekTgl},
                     }
                 })
-                const hLaporan = await HPembayaranGaji.create({
-                    id, HKontrakKaryawanId: cekHKontrak.id, verifikasiKaryawan: 0, idKeuangan: 0, idHRD: user.userJWT.id,
-                    totalGaji: (cekHKontrak.totalGaji + cekHKontrak.totalIuran), tanggalPembayaran: new Date("0000-00-00"), status: 0
-                },{ transaction: t});
-                
 
-                cekLaporan = await DPembayaranGaji.count({
-                    where: {
-                        id: {[Op.startsWith]: idDLaporan}
-                    }
-                })
-                var counterId = cekLaporan;
+                //lembur
+                var baseGajiLembur;
+                if(cekHKontrak.jenisKontrak === "Bulanan"){
+                    baseGajiLembur = ((cekHKontrak.totalGaji / 25) / 8) * 1.5;
+                }else if(cekHKontrak.jenisKontrak === "Mingguan"){
+                    baseGajiLembur = 13543
+                }
+                var gajiLembur = baseGajiLembur * jumlahLembur;
+
                 //penilaian
-                var counterNilai = 0;
                 cekLaporan = await HPenilaianHRD.findOne({
                     where: { idKaryawan: {[Op.eq]: idKaryawan} },
                     order: [ [ 'createdAt', 'DESC' ]],
@@ -619,22 +616,63 @@ module.exports={
                         nilaiMax: {[Op.gt]: counterNilai}
                     }
                 })
+                var pengurangan = cekLaporan.pengurangan;
+                var nilaiUang = cekLaporan.nilaiUang;
+                var hasilNilai = cekLaporan.hasilNilai;
+
+                //pajak
+
+                //utang
+                cekLaporan = await HPinjamUang.findOne({
+                    where: {
+                        idKaryawan: {[Op.eq]: idKaryawan},
+                        status: {[Op.eq]: 2},
+                        lunas: false
+                    }
+                })
+                var totalUtang = 0;
+                var pembayaranKe;
+                if(cekLaporan !== null){
+                    cekLaporan = await DPinjamUang.findOne({
+                        where: {
+                            HPinjamUangId: {[Op.eq]: cekLaporan.id},
+                            lunas: {[Op.eq]: false},
+                        }
+                    })
+                    totalUtang += cekLaporan.totalPembayaran;
+                    pembayaranKe = cekLaporan.pembayaranKe;
+                }
+                
+                var totalGaji = (cekHKontrak.totalGaji + cekHKontrak.totalIuran) + gajiLembur - totalUtang;
+                if(pengurangan === true){
+                    totalGaji -= nilaiUang;
+                }else{
+                    totalGaji += nilaiUang;
+                }
+
+                const hLaporan = await HPembayaranGaji.create({
+                    id, HKontrakKaryawanId: cekHKontrak.id, verifikasiKaryawan: 0, idKeuangan: 0, idHRD: user.userJWT.id,
+                    totalGaji: totalGaji, tanggalPembayaran: new Date("0000-00-00"), status: 0
+                },{ transaction: t});
+                
+
+                cekLaporan = await DPembayaranGaji.count({
+                    where: {
+                        id: {[Op.startsWith]: idDLaporan}
+                    }
+                })
+                var counterId = cekLaporan;
+                //penilaian
+                var counterNilai = 0;
                 counterIdDLaporan = idDLaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
                 await DPembayaranGaji.create({
-                    id: counterIdDLaporan, HPembayaranGajiId: id, pengurangan: cekLaporan.pengurangan, nama: "Gaji Penilaian",
-                    total: cekLaporan.nilaiUang, keterangan: "Nilai Karyawan "+cekLaporan.hasilNilai
+                    id: counterIdDLaporan, HPembayaranGajiId: id, pengurangan: pengurangan, nama: "Gaji Penilaian",
+                    total: nilaiUang, keterangan: "Nilai Karyawan "+hasilNilai
                 },{ transaction: t});
                 counterId += 1;
 
 
                 //lembur
-                var baseGajiLembur;
-                if(cekHKontrak.jenisKontrak === "Bulanan"){
-                    baseGajiLembur = ((cekHKontrak.totalGaji / 25) / 8) * 1.5;
-                }else if(cekHKontrak.jenisKontrak === "Mingguan"){
-                    baseGajiLembur = 13543
-                }
-                var gajiLembur = baseGajiLembur * jumlahLembur;
                 counterIdDLaporan = idDLaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
                 await DPembayaranGaji.create({
                     id: counterIdDLaporan, HPembayaranGajiId: id, pengurangan: false, nama: "Gaji Lembur",
@@ -644,6 +682,16 @@ module.exports={
 
                 //pajak
 
+                //utang
+                if(totalUtang > 0){
+                    counterIdDLaporan = idDLaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
+                    await DPembayaranGaji.create({
+                        id: counterIdDLaporan, HPembayaranGajiId: id, pengurangan: true, nama: "Utang Pinjaman",
+                        total: totalUtang, keterangan: "Utang Pembayaran Ke-"+pembayaranKe
+                    },{ transaction: t});
+                    counterId += 1;
+                }
+                
                 t.commit()
                 return hLaporan;
             }catch(err){
