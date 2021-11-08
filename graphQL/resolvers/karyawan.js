@@ -210,9 +210,9 @@ module.exports={
                         as: 'jabatan',
                         where: {
                             tingkatJabatan: {[Op.gte]: 4}
-                        },
-                        order: [['id','ASC']]
+                        }
                     }],
+                    order: [['id','ASC']]
                 }) 
                 return karyawans;
             }catch(err){
