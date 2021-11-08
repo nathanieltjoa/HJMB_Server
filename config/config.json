@@ -13,7 +13,7 @@
     "database": "hjmb",
     "host": "127.0.0.1",
     "dialect": "mysql",
-    "timezone": "+08:00"
+    "timezone": "+00:00"
   },
   "production": {
     "username": "root",
@@ -21,6 +21,6 @@
     "database": "hjmb",
     "host": "127.0.0.1",
     "dialect": "mysql",
-    "timezone": "+08:00"
+    "timezone": "+00:00"
   }
 }

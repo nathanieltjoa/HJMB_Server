@@ -360,8 +360,12 @@ module.exports={
                 var counterTgl = dayjs(new Date()).format('DDMMYYYY');
                 var id = "H" + counterTgl;
                 var idDLaporan = "D" + counterTgl;
+                console.log("Sebelum: ")
+                console.log(jamLaporan)
                 jamLaporan = jamLaporan.slice(0,19);
                 var jamLaporanKu = dayjs(jamLaporan).format('HH:mm')
+                console.log("Sesudah: ");
+                console.log(jamLaporanKu);
                 var status = 1;
                 var keteranganBanding = "";
                 var laporan = null;
