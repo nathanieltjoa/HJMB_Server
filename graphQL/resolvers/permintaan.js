@@ -461,7 +461,8 @@ module.exports={
                             idPeminta: {[Op.eq]: user.userJWT.id},
                             createdAt: {
                                 [Op.between]: [firstDay, lastDay]
-                            }
+                            },
+                            status: {[Op.ne]: 0}
                         },
                         group: ['idPeminta']
                     })
