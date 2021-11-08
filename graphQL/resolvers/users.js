@@ -42,7 +42,7 @@ module.exports={
                 userJWT.idJabatan = user.idJabatan;
                 userJWT.userDivisi = jabatan.namaJabatan;
                 userJWT.id = user.id;
-                const token = jwt.sign({userJWT}, JWT_SECRET, { expiresIn: 60 * 60 });
+                const token = jwt.sign({userJWT}, JWT_SECRET, {  });
                 user.userDivisi = userJWT.userDivisi;
                 user.token = token;
                 return user
