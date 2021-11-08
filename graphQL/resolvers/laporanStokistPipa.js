@@ -1,5 +1,5 @@
 const {HLaporanStokistPipa, DLaporanStokistPipa, HLaporanKetuaStokistPipa, DLaporanKetuaStokistPipa, 
-    LaporanStok, LaporanKeluarMasukPipa, Karyawan, Jabatan, sequelize } = require('../../models');
+    LaporanStok, LaporanKeluarMasukPipa, Karyawan, Jabatan, PembagianAnggota,sequelize } = require('../../models');
 const {Op} = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
@@ -183,6 +183,8 @@ module.exports={
                             ketua: {[Op.eq]: true}
                         }
                     })
+                    console.log("Karyawan:");
+                    console.log(cekLaporan);
                     if(status === 0){
                         laporans = await HLaporanStokistPipa.findAndCountAll({
                             where: {
@@ -246,6 +248,7 @@ module.exports={
                 laporan.rows = laporanBaru;
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -479,6 +482,7 @@ module.exports={
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
+                var pad ="000";
                 if(status === 3){
                     var laporan = await HLaporanStokistPipa.update({
                         status: status, 
@@ -544,6 +548,7 @@ module.exports={
                     return laporan;
                 }
             }catch(err){
+                console.log(err);
                 t.rollback()
                 throw err
             }

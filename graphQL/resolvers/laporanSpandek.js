@@ -1,4 +1,4 @@
-const {HLaporanSpandek, DLaporanSpandek, HLaporanHollow, DLaporanHollow, Karyawan, Jabatan, sequelize } = require('../../models');
+const {HLaporanSpandek, DLaporanSpandek, HLaporanHollow, DLaporanHollow, Karyawan, Jabatan, PembagianAnggota,sequelize } = require('../../models');
 const {Op} = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')

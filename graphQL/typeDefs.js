@@ -556,6 +556,7 @@ module.exports = gql`
       terimaLaporan: String 
       jenisLaporan: String 
       jumlahLaporan: Int 
+      createdAt: MyDate
       laporanStokKeluarMasukPipa: LaporanStok
     }
     type HLaporanCatTegel{

@@ -138,7 +138,7 @@ module.exports={
                     })
                 }else{
                     var karyawan = await Karyawan.findOne({
-                        where: { id: {[Op.eq]: idKaryawn}}
+                        where: { id: {[Op.eq]: idKaryawan}}
                     })
     
                     laporan = await PembagianAnggota.create({
@@ -147,6 +147,7 @@ module.exports={
                 }
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },

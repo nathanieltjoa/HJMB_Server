@@ -378,8 +378,8 @@ module.exports={
                 var id = "H" + counterTgl;
                 var idDLaporan = "D" + counterTgl;
                 var idULaporan = "U" + counterTgl;
-                jamLaporan = jamLaporan.slice(0,19);
-                var jamLaporanKu = dayjs(jamLaporan).format('HH:mm')
+                var jamLaporanKu = jamLaporan;
+                console.log("Sesudah: ");
                 console.log(jamLaporanKu);
                 var status = 1;
                 var keteranganBanding = "";
@@ -507,6 +507,7 @@ module.exports={
                     });
                 }
             }catch(err){
+                console.log(err);
                 throw err
             }
         },

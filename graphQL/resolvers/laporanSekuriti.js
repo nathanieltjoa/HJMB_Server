@@ -1,5 +1,5 @@
 const { HLaporanSekuriti, DLaporanDinasSekuriti, DLaporanInventarisSekuriti, DLaporanMutasiSekuriti
-    , Karyawan, Jabatan, Gudang, sequelize } = require('../../models');
+    , Karyawan, Jabatan, Gudang, PembagianAnggota,sequelize } = require('../../models');
 const {Op} = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
