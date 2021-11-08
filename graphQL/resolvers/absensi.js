@@ -56,6 +56,8 @@ module.exports={
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 page -= 1;
                 var offset = page ? page * limit: 0;
+                var date = new Date();
+                var y = date.getFullYear(), m = date.getMonth();
                 var firstDay = dayjs(new Date(y, m, 1)).format('YYYY-MM-DD');
                 var lastDay = dayjs(new Date(y, m + 1, 0)).format('YYYY-MM-DD');
                 const listAbsensi = await Absensi.findAndCountAll({

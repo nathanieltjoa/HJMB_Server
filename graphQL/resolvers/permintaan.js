@@ -545,6 +545,7 @@ module.exports={
                 t.commit();
                 return permintaans;
             }catch(err){
+                console.log(err);
                 t.rollback();
                 throw err
             }
