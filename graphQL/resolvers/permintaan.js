@@ -269,7 +269,7 @@ module.exports={
                         status: {[Op.eq]: status}
                     })
                 }
-                if(orderBy === "Permintaan Terbaru"){
+                if(orderBy === "Permintaan Terbaru" || orderBy === ""){
                     orderKu= [
                         ["createdAt", "DESC"]
                     ]
@@ -371,7 +371,7 @@ module.exports={
                         status: {[Op.eq]: status}
                     })
                 }
-                if(orderBy === "Permintaan Terbaru"){
+                if(orderBy === "Permintaan Terbaru" || orderBy === ""){
                     orderKu= [
                         ["createdAt", "DESC"]
                     ]
@@ -610,61 +610,67 @@ module.exports={
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
 
-                var cekLaporan = await PermintaanSurat.findOne({
-                    include:[{
-                        model: Karyawan,
-                        as: 'karyawan',
+                var laporan = null
+                if(status === 2){
+                    laporan = await PermintaanSurat.update({status: status, keteranganHRD: keteranganHRD, idHRD: user.userJWT.id},{
+                        where: {id: {[Op.eq]: id}}
+                    })
+                }else{
+                    var cekLaporan = await PermintaanSurat.findOne({
+                        include:[{
+                            model: Karyawan,
+                            as: 'karyawan',
+                            include:[{
+                                model: Jabatan,
+                                as: 'jabatan'
+                            }]
+                        }],
+                        where: {
+                            id: {[Op.eq]: id}
+                        }
+                    })
+                    var cekKaryawan = await Karyawan.findOne({
                         include:[{
                             model: Jabatan,
                             as: 'jabatan'
-                        }]
-                    }],
-                    where: {
-                        id: {[Op.eq]: id}
+                        }],
+                        where: {id: {[Op.eq]: user.userJWT.id}}
+                    })
+                    const html = await fs.readFileSync(path.join(__dirname, '../../public/html/Surat Keterangan Kerja.html'), 'utf-8');
+                    const filename = id + '_doc' + '.pdf';
+                    const obj = {
+                        namaKaryawan: cekLaporan.karyawan.nama,
+                        alamatKaryawan: cekLaporan.karyawan.alamat,
+                        jabatanKaryawan: cekLaporan.karyawan.jabatan.jabatanKu + " "+cekLaporan.karyawan.jabatan.namaJabatan,
+                        namaHRD: cekKaryawan.nama,
+                        alamatHRD: cekKaryawan.alamat,
+                        jabatanHRD: cekKaryawan.jabatan.namaJabatan,
+                        tanggal: dayjs(cekLaporan.tanggalKerja).format('DD MMMM YYYY'),
+                        tanggalSekarang: dayjs(new Date()).format('DD MMMM YYYY')
                     }
-                })
-                var cekKaryawan = await Karyawan.findOne({
-                    include:[{
-                        model: Jabatan,
-                        as: 'jabatan'
-                    }],
-                    where: {id: {[Op.eq]: user.userJWT.id}}
-                })
-                const html = await fs.readFileSync(path.join(__dirname, '../../public/html/Surat Keterangan Kerja.html'), 'utf-8');
-                const filename = id + '_doc' + '.pdf';
-                var laporan = null
-                const obj = {
-                    namaKaryawan: cekLaporan.karyawan.nama,
-                    alamatKaryawan: cekLaporan.karyawan.alamat,
-                    jabatanKaryawan: cekLaporan.karyawan.jabatan.jabatanKu + " "+cekLaporan.karyawan.jabatan.namaJabatan,
-                    namaHRD: cekKaryawan.nama,
-                    alamatHRD: cekKaryawan.alamat,
-                    jabatanHRD: cekKaryawan.jabatan.namaJabatan,
-                    tanggal: dayjs(cekLaporan.tanggalKerja).format('DD MMMM YYYY'),
-                    tanggalSekarang: dayjs(new Date()).format('DD MMMM YYYY')
+                    const document = {
+                        html: html,
+                        data: {
+                            laporan: obj
+                        },
+                        path: path.join(__dirname, `../../public/docs/${filename}`)
+                    }
+                    var assestPath = path.join(__dirname, `/../../public/`);
+                    assestPath = assestPath.replace(new RegExp(/\\/g), '/');
+                    var options = {
+                        formate: 'A3',
+                        orientation: 'portrait',
+                        border: '2mm',
+                    }
+                    await pdf.create(document, options)
+                        .then( async res => {
+                        }).catch(error => {
+                        });
+                    const filepath = `http://localhost:4000/docs/${filename}`;
+                    laporan = await PermintaanSurat.update({status: status, keteranganHRD: keteranganHRD, idHRD: user.userJWT.id, file: filepath},{
+                        where: {id: {[Op.eq]: id}}
+                    })
                 }
-                const document = {
-                    html: html,
-                    data: {
-                        laporan: obj
-                    },
-                    path: path.join(__dirname, `../../public/docs/${filename}`)
-                }
-                var assestPath = path.join(__dirname, `/../../public/`);
-                assestPath = assestPath.replace(new RegExp(/\\/g), '/');
-                var options = {
-                    formate: 'A3',
-                    orientation: 'portrait',
-                    border: '2mm',
-                }
-                await pdf.create(document, options)
-                    .then( async res => {
-                    }).catch(error => {
-                    });
-                const filepath = `http://localhost:4000/docs/${filename}`;
-                laporan = await PermintaanSurat.update({status: status, keteranganHRD: keteranganHRD, idHRD: user.userJWT.id, file: filepath},{
-                    where: {id: {[Op.eq]: id}}
-                })
                 return laporan;
             }catch(err){
                 throw err

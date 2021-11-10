@@ -401,7 +401,7 @@ module.exports={
                     id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
                     const hLaporan = await HLaporanProduksiPipa.create({
                         id, shift, tipeMesin, warna: "", ukuran: 0, idPelapor, idKetua: 0, dis : 0, pin : 0, 
-                        hasilProduksi : totalProduksi, jumlahBahan : 0, BS : 0, totalBahan : 0, status
+                        hasilProduksi : 0, jumlahBahan : 0, BS : 0, totalBahan : 0, status
                     },{ transaction: t});
                 }else{
                     id = cekLaporan.id;
@@ -494,14 +494,20 @@ module.exports={
                 var laporans = await DLaporanProduksiPipa.findOne({
                     where: {id: {[Op.eq]: id}}
                 })
-                await HLaporanProduksiPipa.update({idKetua: user.userJWT.id},{
+                var hLaporan = await HLaporanProduksiPipa.findOne({
                     where: {id: {[Op.eq]: laporans.HLaporanProduksiPipaId}}
                 })
                 if(status === 3){
+                    await HLaporanProduksiPipa.update({idKetua: user.userJWT.id},{
+                        where: {id: {[Op.eq]: laporans.HLaporanProduksiPipaId}}
+                    })
                     return await DLaporanProduksiPipa.update({status: status, pernahBanding: true, keteranganBanding: keteranganBanding},{
                         where: {id: {[Op.eq]: id}}
                     });
                 }else{
+                    await HLaporanProduksiPipa.update({idKetua: user.userJWT.id, hasilProduksi: hLaporan.hasilProduksi + laporans.totalProduksi},{
+                        where: {id: {[Op.eq]: laporans.HLaporanProduksiPipaId}}
+                    })
                     return await DLaporanProduksiPipa.update({status: status},{
                         where: {id: {[Op.eq]: id}}
                     });
@@ -530,15 +536,6 @@ module.exports={
                 if(cekLaporan === null){
                     throw new UserInputError('Error',  {errors: `Akun Anda Tidak Memiliki Hak Untuk Laporan Ini`} )
                 }
-                var hLaporans = await HLaporanProduksiPipa.findOne({
-                    where: {id: {[Op.eq]: laporans.HLaporanProduksiPipaId}}
-                })
-                var diffTotal = laporans.totalProduksi - totalProduksi;
-                diffTotal = hLaporans.hasilProduksi + diffTotal;
-                await HLaporanProduksiPipa.update({hasilProduksi: diffTotal},{
-                    where: {id: {[Op.eq]: laporans.HLaporanProduksiPipaId}},
-                    transaction: t
-                })
                 await Promise.all(uLaporan.map(async element => {
                     await ULaporanProduksiPipa.update({nilaiUraian: element.nilaiUraian},{
                         where: {id: {[Op.eq]: element.id}},

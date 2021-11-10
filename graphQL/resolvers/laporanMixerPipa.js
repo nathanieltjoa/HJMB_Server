@@ -345,7 +345,7 @@ module.exports={
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 
-                var cekLaporan = await HLaporanProduksiPipa.findOne({
+                var cekLaporan = await LaporanMixerPipa.findOne({
                     where: {
                         id: {[Op.eq]: id},
                         idPelapor: {[Op.eq]: user.userJWT.id}
@@ -353,6 +353,17 @@ module.exports={
                 })
                 if(cekLaporan === null){
                     throw new UserInputError('Error',  {errors: `Akun Anda Tidak Memiliki Hak Untuk Laporan Ini`} )
+                }
+                var tanggalLaporan = new Date();
+                tanggalLaporan = dayjs(tanggalLaporan).format('YYYY-MM-DD');
+                var cekLaporan = await LaporanMixerPipa.findOne({
+                    where: { 
+                        createdAt: {[Op.startsWith]: tanggalLaporan},
+                        tipeMesin: {[Op.eq]: tipeMesin}
+                    }
+                })
+                if(cekLaporan !== null){
+                    throw new UserInputError('Tidak Bisa Menambah Laporan Lagi',  {errors: `Sudah Ada Laporan Masuk Untuk ${tipeMesin} Hari Ini`} )
                 }
                 var laporan = await LaporanMixerPipa.update({
                     status: 1, 
