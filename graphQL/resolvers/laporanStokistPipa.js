@@ -257,7 +257,10 @@ module.exports={
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 return await DLaporanStokistPipa.findAll({
-                    where: {HLaporanStokistPipaId: {[Op.eq]: id}},
+                    where: {
+                        HLaporanStokistPipaId: {[Op.eq]: id},
+                        diHapus: {[Op.eq]: false}
+                    },
                     include: [{
                         model: LaporanStok,
                         as: 'laporanStokStokistPipa',
