@@ -391,6 +391,7 @@ module.exports={
                     id = cekLaporan.id;
                     var cekDLaporan = await DLaporanQualityControlPipa.findOne({
                         where: {
+                            HLaporanQualityControlPipaId: {[Op.eq]: id},
                             jamLaporan: {[Op.eq]: jamLaporanKu}
                         }
                     })

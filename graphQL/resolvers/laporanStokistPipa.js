@@ -565,7 +565,7 @@ module.exports={
                 })
                 var cekLaporan = await HLaporanStokistPipa.findOne({
                     where: {
-                        id: {[Op.eq]: laporans.HLaporanKetuaStokistPipaId},
+                        id: {[Op.eq]: laporans.HLaporanStokistPipaId},
                         idPelapor: {[Op.eq]: user.userJWT.id}
                     }
                 })
