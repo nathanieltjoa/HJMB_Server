@@ -605,7 +605,7 @@ module.exports={
                 if(cekLaporan === null){
                     throw new UserInputError('Error',  {errors: `Belum Ada Penilaian Yang Tersedia`} )
                 }
-		var counterNilai = 0;
+		        var counterNilai = 0;
                 counterNilai += cekLaporan.totalNilai;
                 cekLaporan = await HPenilaianKuisioner.findOne({
                     where: { idKaryawan: {[Op.eq]: idKaryawan} },
@@ -645,7 +645,7 @@ module.exports={
                     pembayaranKe = cekLaporan.pembayaranKe;
                 }
                 
-                var totalGaji = (cekHKontrak.totalGaji + cekHKontrak.totalIuran) + gajiLembur - totalUtang;
+                var totalGaji = ((cekHKontrak.totalGaji + cekHKontrak.totalIuran) + gajiLembur) - totalUtang;
                 if(pengurangan === true){
                     totalGaji -= nilaiUang;
                 }else{
