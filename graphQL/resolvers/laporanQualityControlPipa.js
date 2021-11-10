@@ -361,9 +361,7 @@ module.exports={
                 var id = "H" + counterTgl;
                 var idDLaporan = "D" + counterTgl;
                 console.log("Sebelum: ")
-                console.log(jamLaporan)
-                jamLaporan = jamLaporan.slice(0,19);
-                var jamLaporanKu = dayjs(jamLaporan).format('HH:mm')
+                var jamLaporanKu = jamLaporan;
                 console.log("Sesudah: ");
                 console.log(jamLaporanKu);
                 var status = 1;
@@ -385,7 +383,7 @@ module.exports={
                     })
                     id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
                     const hLaporan = await HLaporanQualityControlPipa.create({
-                        id, shift, tipeMesin, idPelapor, idKetua: 0, tglLaporan, merk: "", panjang: 0,
+                        id, shift, tipeMesin, idPelapor, idKetua: 0, merk: "", panjang: 0,
                         ketebalan: 0, diameterLuar: 0, diameterDalam: 0, totalReject: 0, totalProduksi: 0, 
                         status: 1
                     },{ transaction: t});
