@@ -448,6 +448,7 @@ module.exports={
                 var izinKu = await Izin.findOne({
                     where: {id: {[Op.eq]: IzinId}}
                 })
+		var totalHari = 0;
                 if(izinKu.batasanHari === true){
                     var firstDay = new Date(new Date().getFullYear(), 0, 1);
                     var lastDay = new Date(new Date().getFullYear(), 11, 31);
@@ -470,11 +471,12 @@ module.exports={
                     if(counterPermintaan !== null){
                         counterHari = counterPermintaan.dataValues.totalHari;
                     }
-                    var totalHari = ((Math.abs(tanggalBerakhir - tanggalMulai))/ (24 * 60 * 60 * 1000)) + counterHari
+                    totalHari = ((Math.abs(tanggalBerakhir - tanggalMulai))/ (24 * 60 * 60 * 1000)) + counterHari
                     if(izinKu.totalIzin - totalHari < 0){
                         throw new UserInputError('Izin Anda Tidak Mencukupi Batasan Hari',  {errors: `Izin Anda Tidak Mencukupi Batasan Hari`} )
                     }
                 }
+                totalHari = ((Math.abs(tanggalBerakhir - tanggalMulai))/ (24 * 60 * 60 * 1000));
                 var permintaans;
                 var tgl = new Date();
                 var tglLaporan = dayjs(tgl).format('DDMMYYYY');

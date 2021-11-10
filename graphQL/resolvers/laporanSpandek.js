@@ -522,12 +522,14 @@ module.exports={
                     laporans = await HLaporanSpandek.findAndCountAll({
                         limit: limit,
                         offset: offset,
+                        order: [['createdAt','DESC']]
                     })
                 }else{
                     laporans = await HLaporanSpandek.findAndCountAll({
                         where: {jenisProduk: {[Op.eq]: jenisProduk}},
                         limit: limit,
                         offset: offset,
+                        order: [['createdAt','DESC']]
                     })
                 }
                 return laporans;
@@ -545,6 +547,7 @@ module.exports={
                 var laporans = await HLaporanHollow.findAndCountAll({
                     limit: limit,
                     offset: offset,
+                    order: [['createdAt','DESC']]
                 });
                 var laporanBaru = [];
                 var cekKaryawan;
@@ -568,7 +571,8 @@ module.exports={
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 var laporans = await DLaporanSpandek.findAll({
-                    where: {HLaporanSpandekId: {[Op.eq]: id}}
+                    where: {HLaporanSpandekId: {[Op.eq]: id}},
+                    order: [['createdAt','DESC']]
                 });
                 return laporans;
             }catch(err){
@@ -580,7 +584,8 @@ module.exports={
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 var laporans = await DLaporanHollow.findAll({
-                    where: {HLaporanHollowId: {[Op.eq]: id}}
+                    where: {HLaporanHollowId: {[Op.eq]: id}},
+                    order: [['createdAt','DESC']]
                 });
                 return laporans;
             }catch(err){

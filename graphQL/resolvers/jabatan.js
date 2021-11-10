@@ -17,10 +17,13 @@ module.exports={
                 })
                 var listJabatan;
                 if(tingkatan.tingkatJabatan === 1){
-                    listJabatan = await Jabatan.findAll()
+                    listJabatan = await Jabatan.findAll({
+                        order: [['namaJabatan','ASC']]
+                    })
                 }else{
                     listJabatan = await Jabatan.findAll({
-                        where: {tingkatJabatan: {[Op.gte]: 4}}
+                        where: {tingkatJabatan: {[Op.gte]: 4}},
+                        order: [['namaJabatan','ASC']]
                     })
                 }
                 return listJabatan;
@@ -32,7 +35,8 @@ module.exports={
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 const jabatan = await Jabatan.findOne({
-                    where: {id: {[Op.eq] : user.userJWT.idJabatan}}
+                    where: {id: {[Op.eq] : user.userJWT.idJabatan}},
+                    order: [['namaJabatan','ASC']]
                 })
                 return jabatan;
             }catch(err){

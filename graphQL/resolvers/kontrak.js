@@ -283,6 +283,7 @@ module.exports={
                 }) 
                 return listKontrak;
             }catch(err){
+		console.log(err);
                 throw err
             }
         },
@@ -604,6 +605,7 @@ module.exports={
                 if(cekLaporan === null){
                     throw new UserInputError('Error',  {errors: `Belum Ada Penilaian Yang Tersedia`} )
                 }
+		var counterNilai = 0;
                 counterNilai += cekLaporan.totalNilai;
                 cekLaporan = await HPenilaianKuisioner.findOne({
                     where: { idKaryawan: {[Op.eq]: idKaryawan} },
@@ -652,7 +654,7 @@ module.exports={
 
                 const hLaporan = await HPembayaranGaji.create({
                     id, HKontrakKaryawanId: cekHKontrak.id, verifikasiKaryawan: 0, idKeuangan: 0, idHRD: user.userJWT.id,
-                    totalGaji: totalGaji, tanggalPembayaran: new Date("0000-00-00"), status: 0
+                    totalGaji: totalGaji, tanggalPembayaran: new Date(null), status: 0
                 },{ transaction: t});
                 
 

@@ -238,6 +238,8 @@ module.exports={
                 var idDLaporan = "D" + tglLaporan;
                 var status = 1;
                 var laporan = null;
+		console.log("masuk");
+		console.log(dayjs(new Date(null)).format('YYYY-MM-DD'));
 
                 var cekLaporan = await HLaporanArmada.count({
                     where: {
@@ -253,7 +255,9 @@ module.exports={
                         }
                     })
                     if(cekLaporan === null) {
-                        var counterPengantaran = new Date('0000-00-00 00:00:00')
+                        var counterPengantaran = dayjs(new Date(null)).format('YYYY-MM-DD HH:mm:ss');
+			console.log("pengantaran:");
+			console.log(counterPengantaran);
                         const hLaporan = await HLaporanArmada.create({
                             id, idNota, idArmada, idStokist: 0, idSupir, idKernet, 
                             keterangan, penerima, foto: '-', status, pengantaran: counterPengantaran, 
@@ -299,7 +303,7 @@ module.exports={
                                         }
                                     })
                                     if(cekLaporan === null) {
-                                        var counterPengantaran = new Date('0000-00-00 00:00:00')
+                                        var counterPengantaran = dayjs(new Date(null)).format('YYYY-MM-DD HH:mm:ss');
                                         const hLaporan = await HLaporanArmada.create({
                                             id, idNota, idArmada, idStokist: 0, idSupir, idKernet, 
                                             keterangan, penerima, foto, status, pengantaran: counterPengantaran, 
@@ -343,6 +347,7 @@ module.exports={
                 t.commit();
                 return laporan;
             }catch(err){
+		console.log(err);
                 t.rollback();
                 throw err
             }

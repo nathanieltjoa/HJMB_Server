@@ -245,8 +245,13 @@ module.exports={
                     const upload = await processUpload(file);
                 }
 
-                var counterId = 0;
                 var counterIdDLaporan = idDLaporan.replace('D', 'U');
+                cekLaporan = await ULaporanCatTegel.count({
+                    where: {
+                        id: {[Op.startsWith]: counterIdDLaporan}
+                    }
+                })
+                var counterId = cekLaporan;
                 var idULaporan;
                 await Promise.all(bahanCatTegel.map(async element => {
                     counterId = counterId + 1;

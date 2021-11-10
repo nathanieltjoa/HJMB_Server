@@ -83,8 +83,10 @@ module.exports={
                         }
                     }
                 })
+		console.log(listPertanyaan);
                 return listPertanyaan;
             }catch(err){
+		console.log(err);
                 throw err
             }
         },
@@ -108,10 +110,7 @@ module.exports={
                         }
                     }],
                     where: {
-                        ListKuisionerId: {[Op.eq]: KuisionerId},
-                        createdAt: {
-                            [Op.between]: [firstDay, lastDay]
-                        }
+                        ListKuisionerId: {[Op.eq]: KuisionerId}
                     }
                 })
                 return listPertanyaan;
@@ -198,6 +197,7 @@ module.exports={
                 t.commit();
                 return kuisioner;
             }catch(err){
+		console.log(err);
                 t.rollback();
                 throw new UserInputError('Bad Input',{errors})
             }
@@ -372,6 +372,7 @@ module.exports={
                 t.commit()
                 return id;
             }catch(err){
+		console.log(err);
                 t.rollback()
                 throw err
             }
