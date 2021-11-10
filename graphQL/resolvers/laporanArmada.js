@@ -357,6 +357,7 @@ module.exports={
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
+                var pad = "000";
                 var counterId = id.replace('H','D').slice(0,9);
                 var cekLaporan = await DLaporanArmada.count({
                     where: {
