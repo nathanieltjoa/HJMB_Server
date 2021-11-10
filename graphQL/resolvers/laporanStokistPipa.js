@@ -558,14 +558,9 @@ module.exports={
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
-                var laporans = await DLaporanStokistPipa.findOne({
-                    where: {
-                        id: {[Op.eq]: id}
-                    }
-                })
                 var cekLaporan = await HLaporanStokistPipa.findOne({
                     where: {
-                        id: {[Op.eq]: laporans.HLaporanStokistPipaId},
+                        id: {[Op.eq]: id},
                         idPelapor: {[Op.eq]: user.userJWT.id}
                     }
                 })
