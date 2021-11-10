@@ -446,6 +446,7 @@ module.exports={
                         where: {id: {[Op.startsWith]: counterId}}
                     })
                     var error = false;
+                    var inputBarang = [];
                     await Promise.all(dLaporan.map(async (element)=> {
                         barang = await LaporanStok.findOne({
                             where: {
@@ -473,6 +474,16 @@ module.exports={
                                 transaction: t
                             })
                         }
+                    }))
+                    await Promise.all(dLaporan.map(async element => {
+                        barang = await LaporanStok.findOne({
+                            where: {
+                                jenisBarang: {[Op.eq]: "Pipa"},
+                                merkBarang: {[Op.eq]: element.merkBarang},
+                                tipeBarang: {[Op.eq]: element.tipeBarang},
+                                ukuranBarang: {[Op.eq]: element.ukuranBarang}
+                            }
+                        })
                         cekLaporan += 1;
                         idLaporanKMPipa = counterId + pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
                         await LaporanKeluarMasukPipa.create({
