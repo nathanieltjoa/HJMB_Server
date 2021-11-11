@@ -302,7 +302,7 @@ module.exports={
                     })
                     id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
                     await HLaporanSekuriti.create({
-                        id, GudangId, shift, idKetua: 0, idPenyerah: 0, idPenerima: 0
+                        id, tanggalLaporan: tglLaporan, GudangId, shift, idKetua: 0, idPenyerah: 0, idPenerima: 0
                     },{ transaction: t});
                 }else{
                     id = cekLaporan.id;
