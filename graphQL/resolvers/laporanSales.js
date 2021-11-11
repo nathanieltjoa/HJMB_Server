@@ -156,6 +156,7 @@ module.exports={
                                 idPelapor: {[Op.eq]: user.userJWT.id}
                             }
                         }],
+                        where: {jamKeluar: {[Op.eq]: "-"}},
                         limit: limit
                         ,offset: offset
                         ,order: [['createdAt','DESC']]
@@ -170,6 +171,7 @@ module.exports={
                                 status: {[Op.eq]: status}
                             }
                         }],
+                        where: {jamKeluar: {[Op.eq]: "-"}},
                         limit: limit,
                         offset: offset,
                         order: [['createdAt','DESC']]
