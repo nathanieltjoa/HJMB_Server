@@ -200,19 +200,19 @@ module.exports={
                 const dinas = await DLaporanDinasSekuriti.findOne({
                     include: [{
                         model: HLaporanSekuriti,
-                        as: 'dLaporanDinasSekuriti',
+                        as: 'hLaporanSekuriti',
                         where: {
-                            tanggalLaporan: { 
-                                [Op.gt]: TODAY_START,
-                                [Op.lt]: NOW
-                            },
-                        },
-                        order: [ [ 'tanggalLaporan', 'DESC' ]],
-                        required: true
+                            
+                        }
                     }],
                     where: {
                         idPelapor: {[Op.eq]: user.userJWT.id},
+                        createdAt: { 
+                            [Op.gt]: TODAY_START,
+                            [Op.lt]: NOW
+                        },
                     },
+                    order: [ [ 'createdAt', 'DESC' ]],
                 })
                 if(dinas === null){
                     return null
