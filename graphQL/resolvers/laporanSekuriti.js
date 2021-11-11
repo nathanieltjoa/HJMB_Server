@@ -198,14 +198,21 @@ module.exports={
                 const TODAY_START = new Date().setHours(0, 0, 0, 0);
                 const NOW = new Date();
                 const dinas = await DLaporanDinasSekuriti.findOne({
+                    include: [{
+                        model: HLaporanSekuriti,
+                        as: 'dLaporanDinasSekuriti',
+                        where: {
+                            tanggalLaporan: { 
+                                [Op.gt]: TODAY_START,
+                                [Op.lt]: NOW
+                            },
+                        },
+                        order: [ [ 'tanggalLaporan', 'DESC' ]],
+                        required: true
+                    }],
                     where: {
                         idPelapor: {[Op.eq]: user.userJWT.id},
-                        tanggalLaporan: { 
-                            [Op.gt]: TODAY_START,
-                            [Op.lt]: NOW
-                        },
                     },
-                    order: [ [ 'tanggalLaporan', 'DESC' ]],
                 })
                 if(dinas === null){
                     return null
