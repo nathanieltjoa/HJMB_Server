@@ -198,13 +198,6 @@ module.exports={
                 const TODAY_START = new Date().setHours(0, 0, 0, 0);
                 const NOW = new Date();
                 const dinas = await DLaporanDinasSekuriti.findOne({
-                    include: [{
-                        model: HLaporanSekuriti,
-                        as: 'hLaporanSekuriti',
-                        where: {
-                            
-                        }
-                    }],
                     where: {
                         idPelapor: {[Op.eq]: user.userJWT.id},
                         createdAt: { 
@@ -219,11 +212,9 @@ module.exports={
                 }
                 const cekInventaris = await DLaporanInventarisSekuriti.findOne({
                     where: {HLaporanSekuritiId: {[Op.eq]: dinas.HLaporanSekuritiId}},
-                    order: [ [ 'tanggalLaporan', 'DESC' ]],
                 })
                 const cekMutasi = await DLaporanMutasiSekuriti.findOne({
                     where: {HLaporanSekuritiId: {[Op.eq]: dinas.HLaporanSekuritiId}},
-                    order: [ [ 'tanggalLaporan', 'DESC' ]],
                 })
                 var include;
                 if(cekInventaris !== null && cekMutasi !== null){
