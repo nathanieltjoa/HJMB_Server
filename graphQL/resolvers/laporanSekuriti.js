@@ -425,8 +425,6 @@ module.exports={
                 var tglLaporan = dayjs(counterTgl).format('YYYY-MM-DD');
                 var idPelapor = user.userJWT.id;
                 var counterTglId = dayjs(counterTgl).format('DDMMYYYY');
-                jamLaporan = jamLaporan.slice(0,19);
-                jamLaporan = dayjs(jamLaporan).format('HH:mm:ss')
                 var id = "H" + counterTglId;
                 var idDLaporan = "D" + counterTglId;
                 var laporan = null;
@@ -530,10 +528,10 @@ module.exports={
                         }
                     })
                     if(laporans.shift === "Pagi"){
-                        var counterTgl = dayjs(laporans.tanggalLaporan).format('DD-MM-YYYY').toString();
+                        var counterTgl = dayjs(laporans.tanggalLaporan).format('YYYY-MM-DD').toString();
                         var cekLaporan = await HLaporanSekuriti.findOne({
                             where: {
-                                tanggalLaporan : {[Op.startsWith]: counterTgl},
+                                tanggalLaporan : {[Op.eq]: counterTgl},
                                 shift: {[Op.eq]: "Malam"}
                             }
                         })
@@ -551,10 +549,10 @@ module.exports={
                         }
                     }else if(laporans.shift === "Malam"){
                         var counterTgl = (laporans.tanggalLaporan + 1);
-                        counterTgl = dayjs(laporans.tanggalLaporan).format('DD-MM-YYYY').toString();
+                        counterTgl = dayjs(laporans.tanggalLaporan).format('YYYY-MM-DD').toString();
                         var cekLaporan = await HLaporanSekuriti.findOne({
                             where: {
-                                tanggalLaporan : {[Op.startsWith]: counterTgl},
+                                tanggalLaporan : {[Op.eq]: counterTgl},
                                 shift: {[Op.eq]: "Pagi"}
                             }
                         })
