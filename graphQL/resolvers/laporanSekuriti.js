@@ -559,7 +559,7 @@ module.exports={
                             }
                         })
                         if(cekLaporan === null){
-                            counterTgl = dayjs(laporans.tanggalLaporan).format('DD-MM-YYYY').toString();
+                            counterTgl = dayjs(counterTgl).format('DD-MM-YYYY').toString();
                             throw new UserInputError('Belum Absen Dinas',  {errors: `Belum Absen Dinas ${counterTgl} Shift Pagi`} )
                         }
                         laporans = await DLaporanDinasSekuriti.findOne({
@@ -569,7 +569,7 @@ module.exports={
                             }
                         })
                         if(laporans === null){
-                            counterTgl = dayjs(laporans.tanggalLaporan).format('DD-MM-YYYY').toString();
+                            counterTgl = dayjs(counterTgl).format('DD-MM-YYYY').toString();
                             throw new UserInputError('Belum Absen Dinas',  {errors: `Belum Absen Dinas ${counterTgl} Shift Pagi`} )
                         }
                     }
