@@ -13,15 +13,9 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
   sequelize = new Sequelize(config.database, config.username, config.password, {
+    host: "127.0.0.1",
     dialect:'mysql',
-    define: {
-      underscored: true,
-      freezeTableName: true, //use singular table name
-      timestamps: false,  // I do not want timestamp fields by default
-    },
     dialectOptions: {
-      useUTC: false, //for reading from database
-      dateStrings: true,
       typeCast: function (field, next) { // for reading from database
         if (field.type === 'DATETIME') {
           return field.string()
