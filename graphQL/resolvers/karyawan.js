@@ -260,13 +260,11 @@ module.exports={
                 }
                 if(orderBy === "Nilai Tertinggi"){
                     orderKu= [
-                        [{model: HPenilaianHRD, as: 'hPenilaianHRD'},"totalNilai", "DESC NULLS LAST"],
-                        [{model: HPenilaianKuisioner, as: 'hPenilaianKuisioner'},"totalNilai", "DESC NULLS LAST"],
+                        [HPenilaianHRD, HPenilaianKuisioner, "totalNilai", "DESC"],
                     ]
                 }else if(orderBy === "Nilai Terendah"){
                     orderKu= [
-                        [{model: HPenilaianHRD, as: 'hPenilaianHRD'},"totalNilai", "ASC NULLS LAST"],
-                        [{model: HPenilaianKuisioner, as: 'hPenilaianKuisioner'},"totalNilai", "ASC NULLS LAST"],
+                        [HPenilaianHRD, HPenilaianKuisioner, "totalNilai", "ASC"],
                     ]
                 }
                 if(divisi !== null && divisi !== ""){
