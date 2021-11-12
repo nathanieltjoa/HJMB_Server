@@ -260,13 +260,13 @@ module.exports={
                 }
                 if(orderBy === "Nilai Tertinggi"){
                     orderKu= [
-                        ['hPenilaianHRD',"totalNilai", "DESC"],
-                        ['hPenilaianKuisioner',"totalNilai", "DESC"],
+                        [{model: HPenilaianHRD, as: 'hPenilaianHRD'},"totalNilai", "DESC"],
+                        [{model: HPenilaianKuisioner, as: 'hPenilaianKuisioner'},"totalNilai", "DESC"],
                     ]
                 }else if(orderBy === "Nilai Terendah"){
                     orderKu= [
-                        ['hPenilaianHRD',"totalNilai", "ASC"],
-                        ['hPenilaianKuisioner',"totalNilai", "ASC"],
+                        [{model: HPenilaianHRD, as: 'hPenilaianHRD'},"totalNilai", "ASC"],
+                        [{model: HPenilaianKuisioner, as: 'hPenilaianKuisioner'},"totalNilai", "ASC"],
                     ]
                 }
                 if(divisi !== null && divisi !== ""){
@@ -291,17 +291,11 @@ module.exports={
                         as: 'hPenilaianHRD',
                         where: whereDKu,
                         required: false,
-                        order: [
-                            ['hPenilaianHRD',"totalNilai", "DESC"],
-                        ]
                     },{
                         model: HPenilaianKuisioner,
                         as: 'hPenilaianKuisioner',
                         where: whereDKu,
-                        required: false,
-                        order: [
-                            ['hPenilaianKuisioner',"totalNilai", "DESC"],
-                        ]
+                        required: false
                     },{
                         model: Jabatan,
                         as: 'jabatan',
@@ -310,6 +304,7 @@ module.exports={
                     limit: limit,
                     offset: offset,
                     where: whereHKu,
+                    order: orderKu,
                 })
                 return karyawans;
             }catch(err){
