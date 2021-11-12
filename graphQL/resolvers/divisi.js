@@ -11,16 +11,32 @@ module.exports={
         getListDivisi: async (_, __, { user })=>{
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
-                const listDivisi = await Divisi.findAll({
-                    where: {
-                        status: {[Op.eq]: 1},
-                        [Op.and]: [
-                            {namaDivisi: {[Op.ne]: 'Direktur Perusahaan'}},
-                            {namaDivisi: {[Op.ne]: 'Wakil Direktur Perusahaan'}},
-                            {namaDivisi: {[Op.ne]: 'HRD'}},
-                        ],
-                    }
+                var listDivisi;
+                var jabatan = await Jabatan.findOne({
+                    where: { id: {[Op.eq]: user.userJWT.idJabatan}}
                 })
+                if(jabatan.tingkatJabatan === 1){
+                    listDivisi = await Divisi.findAll({
+                        where: {
+                            status: {[Op.eq]: 1},
+                            [Op.and]: [
+                                {namaDivisi: {[Op.ne]: 'Direktur Perusahaan'}},
+                                {namaDivisi: {[Op.ne]: 'Wakil Direktur Perusahaan'}},
+                            ],
+                        }
+                    })
+                }else{
+                    listDivisi = await Divisi.findAll({
+                        where: {
+                            status: {[Op.eq]: 1},
+                            [Op.and]: [
+                                {namaDivisi: {[Op.ne]: 'Direktur Perusahaan'}},
+                                {namaDivisi: {[Op.ne]: 'Wakil Direktur Perusahaan'}},
+                                {namaDivisi: {[Op.ne]: 'HRD'}},
+                            ],
+                        }
+                    })
+                }
                 return listDivisi;
             }catch(err){
                 throw err
