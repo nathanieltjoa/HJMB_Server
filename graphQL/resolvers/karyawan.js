@@ -290,12 +290,10 @@ module.exports={
                         model: HPenilaianHRD,
                         as: 'hPenilaianHRD',
                         where: whereDKu,
-                        required: true,
                     },{
                         model: HPenilaianKuisioner,
                         as: 'hPenilaianKuisioner',
                         where: whereDKu,
-                        required: true
                     },{
                         model: Jabatan,
                         as: 'jabatan',
@@ -305,6 +303,7 @@ module.exports={
                     offset: offset,
                     where: whereHKu,
                     order: orderKu,
+                    subQuery: false,
                 })
                 return karyawans;
             }catch(err){
