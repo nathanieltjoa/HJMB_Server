@@ -290,12 +290,12 @@ module.exports={
                         model: HPenilaianHRD,
                         as: 'hPenilaianHRD',
                         where: whereDKu,
-                        required: false,
+                        required: true,
                     },{
                         model: HPenilaianKuisioner,
                         as: 'hPenilaianKuisioner',
                         where: whereDKu,
-                        required: false
+                        required: true
                     },{
                         model: Jabatan,
                         as: 'jabatan',
