@@ -260,11 +260,13 @@ module.exports={
                 }
                 if(orderBy === "Nilai Tertinggi"){
                     orderKu= [
-                        [HPenilaianHRD, HPenilaianKuisioner, "totalNilai", "DESC"],
+                        ['hPenilaianHRD',"totalNilai", "DESC"],
+                        ['hPenilaianKuisioner',"totalNilai", "DESC"],
                     ]
                 }else if(orderBy === "Nilai Terendah"){
                     orderKu= [
-                        [HPenilaianHRD, HPenilaianKuisioner, "totalNilai", "ASC"],
+                        ['hPenilaianHRD',"totalNilai", "ASC"],
+                        ['hPenilaianKuisioner',"totalNilai", "ASC"],
                     ]
                 }
                 if(divisi !== null && divisi !== ""){
