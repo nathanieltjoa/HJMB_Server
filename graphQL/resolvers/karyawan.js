@@ -284,11 +284,13 @@ module.exports={
                     {
                         model: HPenilaianHRD,
                         as: 'hPenilaianHRD',
-                        where: whereDKu
+                        where: whereDKu,
+                        required: false,
                     },{
                         model: HPenilaianKuisioner,
                         as: 'hPenilaianKuisioner',
-                        where: whereDKu
+                        where: whereDKu,
+                        required: false
                     },{
                         model: Jabatan,
                         as: 'jabatan',
