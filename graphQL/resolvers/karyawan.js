@@ -300,7 +300,6 @@ module.exports={
                     offset: offset,
                     where: whereHKu,
                     order: orderKu,
-                    subQuery: false,
                 })
                 return karyawans;
             }catch(err){
