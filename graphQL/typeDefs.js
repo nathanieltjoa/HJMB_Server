@@ -965,6 +965,11 @@ module.exports = gql`
       limit: Int 
       status: Int 
     ): pagePermintaan
+    getListIzinPribadiHRD(
+      page: Int 
+      limit: Int 
+      status: Int 
+    ): pagePermintaan
     getPermintaan(id: Int!): Permintaan!
     getListSurat(
       page: Int 

@@ -99,6 +99,48 @@ module.exports={
                 throw err
             }
         },
+        getListIzinPribadiHRD: async (_, args, { user }) =>{
+            var { page, limit, status} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                var offset = page ? page * limit: 0;
+                //cari data jabatan User
+                const jabatan = await Jabatan.findOne({
+                    where: { id: {[Op.eq]: user.userJWT.idJabatan}}
+                })
+                var whereHKu = [];
+                if(status !== -1){
+                    whereHKu.push({
+                        idPeminta: {[Op.eq]: user.userJWT.id},
+                        status: {[Op.eq]: status}
+                    })
+                }else{
+                    whereHKu.push({
+                        idPeminta: {[Op.eq]: user.userJWT.id}
+                    })
+                }
+                //ambil semua permintaan yang sesuai dengan tingkatan
+                const permintaans = await Permintaan.findAndCountAll({
+                    include: [{
+                        model: Izin,
+                        as: 'izin'
+                    },{
+                        model: Karyawan,
+                        as: 'peminta',
+                    },{
+                        model: Karyawan,
+                        as: 'hrd',
+                    },],
+                    where: whereHKu,
+                    limit: limit,
+                    offset: offset,
+                    order: [['createdAt', 'DESC']]
+                })
+                return permintaans;
+            }catch(err){
+                throw err
+            }
+        },
         getPermintaan: async (_,args, { user }) =>{
             var {id} = args;
             try{
@@ -172,11 +214,22 @@ module.exports={
                         idPeminta: {[Op.eq]: karyawan}
                     })
                 }
+                const jabatan = await Jabatan.findOne({
+                    where: { id: {[Op.eq]: user.userJWT.idJabatan}}
+                })
                 laporans = await Permintaan.findAndCountAll({
                     include: [
                         {
                             model: Karyawan,
                             as: 'peminta',
+                            include:[{
+                                model: Jabatan,
+                                as: 'jabatan',
+                                where: {
+                                    tingkatJabatan: {[Op.gte]: jabatan.tingkatJabatan === 1? 2: 4}
+                                },
+                                required: true
+                            }]
                         },
                         {
                             model: Karyawan,
@@ -499,7 +552,7 @@ module.exports={
                     }else if(jabatan.tingkatJabatan === 4){
                         status = 2;
                     }else if(jabatan.tingkatJabatan < 4){
-                        status = 3;
+                        status = 4;
                     }
                 }
                 if(idKetua === undefined ) idKetua = 0;
@@ -570,6 +623,10 @@ module.exports={
                     });
                 }else if(jabatan.tingkatJabatan === 4){
                     await Permintaan.update({status: status, alasan: alasan, idKetua: user.userJWT.id},{
+                        where: {id: {[Op.eq]: id}}
+                    });
+                }else if(jabatan.tingkatJabatan === 1){
+                    await Permintaan.update({status: status, alasan: alasan, idHRD: user.userJWT.id},{
                         where: {id: {[Op.eq]: id}}
                     });
                 }
