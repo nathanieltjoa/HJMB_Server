@@ -229,7 +229,8 @@ module.exports={
                                     tingkatJabatan: {[Op.gte]: jabatan.tingkatJabatan === 1? 2: 4}
                                 },
                                 required: true
-                            }]
+                            }],
+                            required: true,
                         },
                         {
                             model: Karyawan,
