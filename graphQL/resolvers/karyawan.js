@@ -271,7 +271,12 @@ module.exports={
                 }
                 if(divisi !== null && divisi !== ""){
                     whereJKu = {
-                        namaJabatan: {[Op.eq]: divisi}
+                        namaJabatan: {[Op.eq]: divisi},
+                        tingkatJabatan: {[Op.gte]: 4}
+                    }
+                }else{
+                    whereJKu = {
+                        tingkatJabatan: {[Op.gte]: 4}
                     }
                 }
                 if(karyawan !== null && karyawan !== ""){
@@ -286,11 +291,17 @@ module.exports={
                         as: 'hPenilaianHRD',
                         where: whereDKu,
                         required: false,
+                        order: [
+                            ['hPenilaianHRD',"totalNilai", "DESC"],
+                        ]
                     },{
                         model: HPenilaianKuisioner,
                         as: 'hPenilaianKuisioner',
                         where: whereDKu,
-                        required: false
+                        required: false,
+                        order: [
+                            ['hPenilaianKuisioner',"totalNilai", "DESC"],
+                        ]
                     },{
                         model: Jabatan,
                         as: 'jabatan',
@@ -299,7 +310,6 @@ module.exports={
                     limit: limit,
                     offset: offset,
                     where: whereHKu,
-                    order: orderKu,
                 })
                 return karyawans;
             }catch(err){
