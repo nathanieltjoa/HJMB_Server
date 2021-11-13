@@ -284,6 +284,7 @@ module.exports={
                         id: {[Op.eq]: karyawan}
                     }
                 }
+                var karyawanBaru;
                 const karyawans = await Karyawan.findAndCountAll({
                     include: [
                     {
@@ -305,15 +306,19 @@ module.exports={
                     order: orderKu,
                     subQuery: false,
                 })
+                karyawanBaru.count = karyawans.count;
+                var listBaru;
                 await karyawans.rows.map(element => {
                     counterKuisioner = 0;
                     element.hPenilaianKuisioner.map(kuisioner => {
                         counterKuisioner += kuisioner.totalNilai
                     })
                     element.totalNilaiKuisioner = counterKuisioner;
+                    listBaru.push(element);
                 })
-                console.log(karyawans.rows)
-                return karyawans;
+                karyawanBaru.rows = listBaru;
+                console.log(karyawanBaru);
+                return karyawanBaru;
             }catch(err){
                 throw err
             }
