@@ -607,11 +607,14 @@ module.exports={
                 }
 		        var counterNilai = 0;
                 counterNilai += cekLaporan.totalNilai;
-                cekLaporan = await HPenilaianKuisioner.findOne({
+                cekLaporan = await HPenilaianKuisioner.findAll({
+                    attributes: [[sequelize.fn('DISTINCT', sequelize.col('ListKuisionerId')), 'kuisioner'], 'totalNilai'],
                     where: { idKaryawan: {[Op.eq]: idKaryawan} },
                     order: [ [ 'createdAt', 'DESC' ]],
                 })
-                counterNilai += cekLaporan.totalNilai;
+                await Promise.all(cekLaporan.map( async element => {
+                    counterNilai += element.totalNilai;
+                }))
                 cekLaporan = await PengaruhNilai.findOne({
                     where: {
                         nilaiMin: {[Op.lt]: counterNilai},
