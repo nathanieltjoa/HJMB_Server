@@ -284,8 +284,11 @@ module.exports={
                         id: {[Op.eq]: karyawan}
                     }
                 }
-                var karyawanBaru;
                 const karyawans = await Karyawan.findAndCountAll({
+                    attributes: [
+                        'nama',
+                        [sequelize.fn('sum', sequelize.col('hPenilaianKuisioner.totalHasil')), 'totalNilaiKuisioner'],
+                    ],
                     include: [
                     {
                         model: HPenilaianHRD,
@@ -306,19 +309,8 @@ module.exports={
                     order: orderKu,
                     subQuery: false,
                 })
-                karyawanBaru.count = karyawans.count;
-                var listBaru;
-                await karyawans.rows.map(element => {
-                    counterKuisioner = 0;
-                    element.hPenilaianKuisioner.map(kuisioner => {
-                        counterKuisioner += kuisioner.totalNilai
-                    })
-                    element.totalNilaiKuisioner = counterKuisioner;
-                    listBaru.push(element);
-                })
-                karyawanBaru.rows = listBaru;
-                console.log(karyawanBaru);
-                return karyawanBaru;
+                console.log(karyawans.rows);
+                return karyawans;
             }catch(err){
                 throw err
             }
