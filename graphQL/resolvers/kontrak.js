@@ -636,7 +636,7 @@ module.exports={
                     }
                 })
                 var totalUtang = 0;
-                var pembayaranKe;
+                /*var pembayaranKe;
                 if(cekLaporan !== null){
                     cekLaporan = await DPinjamUang.findOne({
                         where: {
@@ -646,7 +646,7 @@ module.exports={
                     })
                     totalUtang += cekLaporan.totalPembayaran;
                     pembayaranKe = cekLaporan.pembayaranKe;
-                }
+                }*/
                 
                 var totalGaji = ((cekHKontrak.totalGaji + cekHKontrak.totalIuran) + gajiLembur) - totalUtang;
                 if(pengurangan === true){
