@@ -323,7 +323,8 @@ module.exports={
                         idKaryawan: {[Op.eq]: karyawan},
                         createdAt: {
                             [Op.between]: [firstDay, lastDay]
-                        }
+                        },
+                        ListKuisionerId: {[Op.eq]: KuisionerId},
                     }
                 })
                 if(hPenilaian === null){
