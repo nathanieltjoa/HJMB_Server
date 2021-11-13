@@ -247,9 +247,7 @@ module.exports={
                 var whereJKu = [];
                 if(bulan !== null && bulan !== undefined){
                     if(bulan.toString() !== "Invalid Date"){
-                        console.log(bulan);
                         var date = new Date(bulan);
-                        console.log(bulan);
                         var y = date.getFullYear(), m = date.getMonth();
                         var firstDay = dayjs(new Date(y, m, 1)).format('YYYY-MM-DD');
                         var lastDay = dayjs(new Date(y, m + 1, 0)).format('YYYY-MM-DD');

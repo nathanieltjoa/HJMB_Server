@@ -20,6 +20,11 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.STRING
     },
+    ListKuisionerId:{
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: true,
+    },
     idKaryawan: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -47,7 +52,8 @@ module.exports = (sequelize, DataTypes) => {
   });
   HPenilaianKuisioner.associate = function(models){
     HPenilaianKuisioner.hasMany(models.DPenilaianKuisioner,{as: 'dPenilaianKuisioner', foreignKey: 'HPenilaianKuisionerId'})
-    HPenilaianKuisioner.belongsTo(models.Karyawan, {foreignKey: 'idKaryawan',as: 'hPenilaianKuisioner'})
+    HPenilaianKuisioner.belongsTo(models.Karyawan, {foreignKey: 'idKaryawan',as: 'karyawan'})
+    HPenilaianKuisioner.belongsTo(models.ListKuisioner, {foreignKey: 'ListKuisionerId',as: 'kuisioner'})
   }
   return HPenilaianKuisioner;
 };

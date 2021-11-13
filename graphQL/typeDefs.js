@@ -246,17 +246,20 @@ module.exports = gql`
     }
     type HPenilaianKuisioner{
       id: String 
+      ListKuisionerId: Int 
       idKaryawan: Int 
       totalNilai: Float 
       jumlahNilai: Float 
       jumlahKaryawan: Int 
+      kuisioner: ListKuisioner
+      karyawan: Karyawan
     }
     type DPenilaianKuisioner{
       id: String 
       HPenilaianKuisionerId: String 
-      ListKuisionerId: Int 
       idPenilai: Int 
       nilai: Float 
+      penilai: Karyawan
     }
     type PenilaianHRD{
       id: String 

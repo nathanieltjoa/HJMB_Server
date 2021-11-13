@@ -85,6 +85,7 @@ module.exports = (sequelize, DataTypes) => {
     Karyawan.hasMany(models.Absensi,{foreignKey: 'idKaryawan',as: 'AbsensiKaryawan'})
     Karyawan.hasMany(models.HPenilaianHRD,{foreignKey: 'idKaryawan',as: 'hPenilaianHRD'})
     Karyawan.hasMany(models.HPenilaianKuisioner,{foreignKey: 'idKaryawan', as: 'hPenilaianKuisioner'})
+    Karyawan.hasMany(models.DPenilaianKuisioner,{foreignKey: 'idPenilai', as: 'dPenilaianKuisioner'})
     Karyawan.hasMany(models.HKontrakKaryawan,{foreignKey: 'idKaryawan', as: 'kontrak'})
     Karyawan.hasMany(models.HPinjamUang,{foreignKey: 'idKaryawan', as: 'hPinjamUangKaryawan'})
     Karyawan.hasMany(models.HPinjamUang,{foreignKey: 'idKeuangan', as: 'hPinjamUangKeuangan'})

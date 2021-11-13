@@ -25,11 +25,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
-    ListKuisionerId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      unique: true,
-    },
     idPenilai: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -47,7 +42,7 @@ module.exports = (sequelize, DataTypes) => {
   });
   DPenilaianKuisioner.associate = function(models){
     DPenilaianKuisioner.belongsTo(models.HPenilaianKuisioner, {foreignKey: 'HPenilaianKuisionerId',as: 'dPenilaianKuisioner'})
-    DPenilaianKuisioner.belongsTo(models.ListKuisioner, {foreignKey: 'ListKuisionerId',as: 'dListKuisioner'})
+    DPenilaianKuisioner.belongsTo(models.Karyawan, {foreignKey: 'idPenilai',as: 'karyawan'})
   }
   return DPenilaianKuisioner;
 };

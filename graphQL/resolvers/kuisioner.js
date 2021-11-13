@@ -83,10 +83,10 @@ module.exports={
                         }
                     }
                 })
-		console.log(listPertanyaan);
+		        console.log(listPertanyaan);
                 return listPertanyaan;
             }catch(err){
-		console.log(err);
+		        console.log(err);
                 throw err
             }
         },
@@ -221,10 +221,16 @@ module.exports={
                     include: [{
                         model: DPenilaianKuisioner,
                         as: 'dPenilaianKuisioner',
-                        where: {idPenilai: {[Op.eq]: user.userJWT.id}}
+                        where: {
+                            idPenilai: {[Op.eq]: user.userJWT.id},
+                            createdAt: {
+                                [Op.between]: [firstDay, lastDay]
+                            }
+                        }
                     }],
                     where: {
-                        idKaryawan: {[Op.eq]: karyawan}
+                        idKaryawan: {[Op.eq]: karyawan},
+                        ListKuisionerId: {[Op.eq]: KuisionerId},
                     }
                 })
                 if(listPenilaian !== null){
@@ -292,6 +298,7 @@ module.exports={
                 const distribusi = await ListDistribusiKuisioner.findOne({
                     where: {
                         TingkatJabatan: {[Op.eq]: jabatan.tingkatJabatan},
+                        ListKuisionerId: {[Op.eq]: KuisionerId},
                         status: {[Op.eq]: 1}
                     }
                 })
@@ -325,14 +332,14 @@ module.exports={
                             id: {[Op.startsWith]: hPenilaianId}
                         }
                     })
-                    hPenilaianId += cekLaporan;
+                    hPenilaianId += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
                     await HPenilaianKuisioner.create({
-                        id: hPenilaianId, idKaryawan: karyawan, totalNilai: nilai, jumlahNilai: nilai,
-                        jumlahKaryawan: 1
+                        id: hPenilaianId, ListKuisionerId: KuisionerId, idKaryawan: karyawan, totalNilai: nilai, 
+                        jumlahNilai: nilai, jumlahKaryawan: 1
                     },{ transaction: t});
                 }else{
                     hPenilaianId = hPenilaian.id;
-                    cekLaporan = await DPenilaianKuisioner.findOne({
+                    /*cekLaporan = await DPenilaianKuisioner.findOne({
                         where: {
                             HPenilaianKuisionerId: {[Op.eq]: hPenilaian.id},
                             idPenilai: {[Op.eq]: user.userJWT.id}
@@ -357,16 +364,25 @@ module.exports={
                             where: {id: {[Op.eq]: hPenilaianId}},
                             transaction: t
                         })
-                    }
+                    }*/
+                    var jumlahNilai = hPenilaian.jumlahNilai + nilai;
+                    var jumlahKaryawan = hPenilaian.jumlahKaryawan + 1;
+                    var counterHNilai = jumlahNilai/ jumlahKaryawan;
+                    await HPenilaianKuisioner.update({
+                        totalNilai: counterHNilai, jumlahNilai, jumlahKaryawan
+                    },{
+                        where: {id: {[Op.eq]: hPenilaianId}},
+                        transaction: t
+                    })
                 }
                 cekLaporan = await DPenilaianKuisioner.count({
                     where: {
                         id: {[Op.startsWith]: dPenilaianId}
                     }
                 })
-                dPenilaianId += cekLaporan;
+                dPenilaianId += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
                 await DPenilaianKuisioner.create({
-                    id: dPenilaianId, HPenilaianKuisionerId: hPenilaianId, ListKuisionerId: KuisionerId, 
+                    id: dPenilaianId, HPenilaianKuisionerId: hPenilaianId, 
                     idPenilai: user.userJWT.id, nilai
                 },{transaction: t});
                 t.commit()
