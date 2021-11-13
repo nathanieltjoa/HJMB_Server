@@ -200,6 +200,7 @@ module.exports={
                             order: [['createdAt','DESC']]
                         })
                     }
+                    laporan.count = laporans.count;
                     await Promise.all(laporans.rows.map(async (element) =>
                     { 
                         namaKaryawan = "-";

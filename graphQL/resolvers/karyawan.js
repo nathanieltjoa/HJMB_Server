@@ -284,11 +284,9 @@ module.exports={
                         id: {[Op.eq]: karyawan}
                     }
                 }
+                var laporans = {};
+                var laporanBaru = [];
                 const karyawans = await Karyawan.findAndCountAll({
-                    attributes: [
-                        'nama',
-                        [sequelize.fn('sum', sequelize.col('hPenilaianKuisioner.totalHasil')), 'totalNilaiKuisioner'],
-                    ],
                     include: [
                     {
                         model: HPenilaianHRD,
@@ -309,8 +307,27 @@ module.exports={
                     order: orderKu,
                     subQuery: false,
                 })
-                console.log(karyawans.rows);
-                return karyawans;
+                var counterKuisioner;
+                laporans.count = karyawans.count;
+                await Promise.all(karyawans.rows.map(async (element) =>
+                { 
+                    totalNilaiKuisioner = 0;
+                    
+                    counterKuisioner = await HPenilaianKuisioner.findAll({
+                        attributes: [
+                            'ListKuisionerId',
+                            [sequelize.fn('sum', sequelize.col('totalNilai')), 'totalNilaiKuisioner'],
+                        ],
+                        where: whereDKu,
+                        group: ['ListKuisionerId']
+                    })
+                    console.log(counterKuisioner);
+                    element.totalNilaiKuisioner = counterKuisioner[0].dataValues.totalNilaiKuisioner;
+                    laporanBaru.push(element);
+                }))
+                laporans.rows = laporanBaru;
+                console.log(laporans.rows);
+                return laporans;
             }catch(err){
                 throw err
             }
