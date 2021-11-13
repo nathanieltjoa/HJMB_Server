@@ -305,13 +305,14 @@ module.exports={
                     order: orderKu,
                     subQuery: false,
                 })
-                karyawans.rows.map(element => {
+                await karyawans.rows.map(element => {
                     counterKuisioner = 0;
                     element.hPenilaianKuisioner.map(kuisioner => {
                         counterKuisioner += kuisioner.totalNilai
                     })
                     element.totalNilaiKuisioner = counterKuisioner;
                 })
+                console.log(karyawans.rows)
                 return karyawans;
             }catch(err){
                 throw err
