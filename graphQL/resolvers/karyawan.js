@@ -313,14 +313,18 @@ module.exports={
                 { 
                     totalNilaiKuisioner = 0;
                     
-                    counterKuisioner = await HPenilaianKuisioner.findAll({
+                    /*counterKuisioner = await HPenilaianKuisioner.findAll({
                         attributes: [
                             [sequelize.fn('sum', sequelize.col('totalNilai')), 'totalNilaiKuisioner'],
                         ],
                         where: whereDKu,
                     })
                     console.log(counterKuisioner);
-                    element.totalNilaiKuisioner = counterKuisioner[0].dataValues.totalNilaiKuisioner;
+                    element.totalNilaiKuisioner = counterKuisioner[0].dataValues.totalNilaiKuisioner;*/
+                    await element.hPenilaianKuisioner.map(kuisioner => {
+                        totalNilaiKuisioner += kuisioner.totalNilai;
+                    })
+                    element.totalNilaiKuisioner = totalNilaiKuisioner;
                     laporanBaru.push(element);
                 }))
                 laporans.rows = laporanBaru;
