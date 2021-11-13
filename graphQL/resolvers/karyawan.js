@@ -307,7 +307,7 @@ module.exports={
                     order: orderKu,
                     subQuery: false,
                 })
-                var counterKuisioner;
+                //var counterKuisioner;
                 laporans.count = karyawans.count;
                 await Promise.all(karyawans.rows.map(async (element) =>
                 { 
@@ -328,7 +328,6 @@ module.exports={
                     laporanBaru.push(element);
                 }))
                 laporans.rows = laporanBaru;
-                console.log(laporans.rows);
                 return laporans;
             }catch(err){
                 throw err
