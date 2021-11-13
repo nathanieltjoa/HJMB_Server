@@ -732,7 +732,7 @@ module.exports={
                         where: {id: {[Op.eq]: id}}
                     });
                 }else if(status === false){
-                    return await HPembayaranGaji.update({status: -1},{
+                    return await HPembayaranGaji.update({status: 3},{
                         where: {id: {[Op.eq]: id}}
                     });
                 }
