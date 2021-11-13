@@ -41,6 +41,7 @@ module.exports = gql`
       pembagianAnggotaKaryawan: PembagianAnggota
       username: String
       passwordRaw: String
+      totalNilaiKuisioner: Int 
     }
     type Izin{
       id: Int 
