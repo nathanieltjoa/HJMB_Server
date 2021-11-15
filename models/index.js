@@ -18,7 +18,7 @@ if (config.use_env_variable) {
     dialectOptions: {
       typeCast: function (field, next) { // for reading from database
         if (field.type === 'DATETIME') {
-          return new Date(field.string() + 'Z');
+          return field.string()
         }
           return next()
         },
