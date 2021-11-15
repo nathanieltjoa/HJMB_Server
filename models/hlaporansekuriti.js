@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
     },
     tanggalLaporan: {
-      type: Sequelize.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: false,
       unique: true,
     },

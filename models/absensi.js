@@ -1,6 +1,6 @@
 'use strict';
 const {
-  Model, Sequelize
+  Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Absensi extends Model {
@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
     },
     tanggal: {
-      type: Sequelize.DataTypes.DATEONLY,
+      type: DataTypes.DATEONLY,
       allowNull: false,
       unique: true,
     },

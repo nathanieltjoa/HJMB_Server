@@ -41,12 +41,12 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
     },
     tanggalMulai: {
-      type: Sequelize.DATE,
+      type: DataTypes.DATE,
       allowNull: true,
       unique: true,
     },
     tanggalAkhir: {
-      type: Sequelize.DATE,
+      type: DataTypes.DATE,
       allowNull: true,
       unique: true,
     },

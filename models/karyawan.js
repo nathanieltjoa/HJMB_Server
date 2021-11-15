@@ -1,6 +1,6 @@
 'use strict';
 const {
-  Model, Sequelize
+  Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Karyawan extends Model {
@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
     },
     tanggalMasuk: {
-      type: Sequelize.DATE,
+      type: DataTypes.DATE,
       allowNull: false,
       unique: true,
     },
@@ -46,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
     },
     tanggalLahir: {
-      type: Sequelize.DATE,
+      type: DataTypes.DATE,
       allowNull: false,
       unique: true,
     },

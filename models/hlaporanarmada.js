@@ -66,11 +66,11 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
     },
     pengantaran: {
-      type: Sequelize.DATE,
+      type: DataTypes.DATE,
       allowNull: false,
     },
     kembali: {
-      type: Sequelize.DATE,
+      type: DataTypes.DATE,
       allowNull: false,
     },
     createdAt: {
