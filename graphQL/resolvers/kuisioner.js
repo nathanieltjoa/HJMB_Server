@@ -75,12 +75,15 @@ module.exports={
                     },{
                         model: ListTanggapan,
                         as: 'listTanggapan',
+                        where: {
+                            createdAt: {
+                                [Op.between]: [firstDay, lastDay]
+                            },
+                            idKaryawan:{[Op.eq]: user.userJWT.id}
+                        }
                     }],
                     where: {
                         ListKuisionerId: {[Op.eq]: KuisionerId},
-                        createdAt: {
-                            [Op.between]: [firstDay, lastDay]
-                        }
                     }
                 })
 		        console.log(listPertanyaan);
@@ -106,7 +109,10 @@ module.exports={
                         model: ListTanggapan,
                         as: 'listTanggapan',
                         where: {
-                            idKaryawan: {[Op.eq]: idKaryawan}
+                            idKaryawan: {[Op.eq]: idKaryawan},
+                            createdAt: {
+                                [Op.between]: [firstDay, lastDay]
+                            },
                         }
                     }],
                     where: {

@@ -1,6 +1,6 @@
 'use strict';
 const {
-  Model
+  Model, Sequelize
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class ListTanggapan extends Model {
@@ -44,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       unique: true,
+    },
+    createdAt: {
+      allowNull: false,
+      type: Sequelize.DATE
     },
   }, {
     sequelize,
