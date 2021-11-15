@@ -648,7 +648,7 @@ module.exports={
                     pembayaranKe = cekLaporan.pembayaranKe;
                 }*/
                 
-                var totalGaji = ((cekHKontrak.totalGaji + cekHKontrak.totalIuran) + gajiLembur) - totalUtang;
+                var totalGaji = ((cekHKontrak.totalGaji - cekHKontrak.totalIuran) + gajiLembur) - totalUtang;
                 if(pengurangan === true){
                     totalGaji -= nilaiUang;
                 }else{
@@ -719,16 +719,7 @@ module.exports={
                 }
 
                 if(status === true){
-                    var totalGaji = cekLaporan.totalGaji;
-                    cekLaporan = await DPembayaranGaji.findAll({
-                        where: {
-                            HPembayaranGajiId: {[Op.eq]: id}
-                        }
-                    })
-                    cekLaporan.map(element => {
-                        totalGaji += element.total
-                    })
-                    return await HPembayaranGaji.update({status: 1, totalGaji: totalGaji},{
+                    return await HPembayaranGaji.update({status: 1},{
                         where: {id: {[Op.eq]: id}}
                     });
                 }else if(status === false){
