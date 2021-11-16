@@ -40,6 +40,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       unique: true,
     },
+    totalMix: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: true,
+    },
     createdAt: {
       allowNull: false,
       type: Sequelize.DATE
