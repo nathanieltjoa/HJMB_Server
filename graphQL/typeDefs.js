@@ -356,27 +356,48 @@ module.exports = gql`
       pelapor: Karyawan
       karyawan: Karyawan
     }
-    type LaporanMixerPipa{
+    type HLaporanMixerPipa{
       id: String 
+      jenisMixer: String 
       tipeMesin: String 
-      bahanDigunakan: Int 
-      totalHasil: Int 
-      targetMixer: Int
-      foto: String
-      keterangan: String
       idPelapor: Int 
       idKetua: Int 
-      status: Int 
-      pernahBanding: Boolean
-      keteranganBanding: String
+      totalMix: Int 
       createdAt: MyDate
       namaPelapor: String
       karyawan: Karyawan
       ketua: Karyawan
     }
+    type DLaporanMixerPipa{
+      id: String 
+      HLaporanMixerPipaId: String 
+      totalHasil: Int 
+      targetKerja: Int 
+      keterangan: String 
+      status: Int 
+      pernahBanding: Boolean 
+      keteranganBanding: String 
+      createdAt: MyDate
+      uLaporanMixerPipa: [ULaporanMixerPipa]
+      fLaporanMixerPipa: [FLaporanMixerPipa]
+      hLaporan: HLaporanMixerPipa
+    }
+    type ULaporanMixerPipa{
+      id: String 
+      DLaporanMixerPipaId: String 
+      namaBahan: String 
+      totalBahan: Float 
+      diHapus: Boolean 
+    }
+    type FLaporanMixerPipa{
+      id: String 
+      DLaporanMixerPipaId: String 
+      foto: String 
+    }
     type HLaporanProduksiPipa{
       id: String 
       shift: String 
+      jenisPipa: String 
       tipeMesin: String 
       warna: String
       ukuran: Int
@@ -769,7 +790,7 @@ module.exports = gql`
     }
     type pageHLaporanMixerPipa{
       count: Int 
-      rows: [LaporanMixerPipa]
+      rows: [DLaporanMixerPipa]
     }
     type pageHLaporanKetuaStokistPipa{
       count: Int 
@@ -875,6 +896,13 @@ module.exports = gql`
       jenisPipa: String 
       ukuranPipa: String 
       jumlahPipa: Int 
+    }
+    input bahanBakuInput {
+      id: String 
+      namaBahan: String 
+      totalBahan: Float 
+      action: String 
+      baru: Boolean
     }
     input stokistPipaEditInput {
       id: String
@@ -1468,29 +1496,30 @@ module.exports = gql`
     ): TargetKerja
     tambahLaporan(
       tipeMesin: String
-      bahanDigunakan: Int 
+      jenisMixer: String 
       totalHasil: Int 
       targetMixer: Int
-      file: Upload
+      file: [Upload]
       keterangan: String
-    ): LaporanMixerPipa
+      bahanBaku: [bahanBakuInput]
+    ): HLaporanMixerPipa
     updateStatusLaporan(
       id: String
       status: Int
       keteranganBanding: String
-    ): LaporanMixerPipa
+    ): HLaporanMixerPipa
     updateLaporan(
       id: String 
-      tipeMesin: String 
-      bahanDigunakan: Int 
       totalHasil: Int 
       keterangan: String
-    ): LaporanMixerPipa
+      bahanBaku: [bahanBakuInput]
+    ): HLaporanMixerPipa
     updateTargetProduksiPipa(
       targetProduksi: Int
     ): TargetKerja
     tambahLaporanProduksiPipa(
       shift: String
+      jenisPipa: String 
       tipeMesin: String
       jamLaporan: String
       totalProduksi: Int 

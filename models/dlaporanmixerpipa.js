@@ -3,7 +3,7 @@ const {
   Model, Sequelize
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class LaporanMixerPipa extends Model {
+  class DLaporanMixerPipa extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -13,35 +13,25 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   };
-  LaporanMixerPipa.init({
+  DLaporanMixerPipa.init({
     id: {
       allowNull: false,
       autoIncrement: false,
       primaryKey: true,
       type: DataTypes.STRING
     },
-    tipeMesin: {
+    HLaporanMixerPipaId: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
-    bahanDigunakan: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      unique: true,
-    },
     totalHasil: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       unique: true,
     },
-    targetMixer: {
+    targetKerja: {
       type: DataTypes.INTEGER,
-      allowNull: true,
-      unique: true,
-    },
-    foto: {
-      type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
@@ -50,24 +40,14 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
-    idPelapor: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      unique: true,
-    },
-    idKetua: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      unique: true,
-    },
     status: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
+      type: DataTypes.STRING,
+      allowNull: false,
       unique: true,
     },
     pernahBanding: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
+      type: DataTypes.STRING,
+      allowNull: false,
       unique: true,
     },
     keteranganBanding: {
@@ -81,13 +61,13 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     sequelize,
-    modelName: 'LaporanMixerPipa',
-    tableName: 'laporanmixerpipa',
+    modelName: 'DLaporanMixerPipa',
+    tableName: 'dlaporanmixerpipa',
   });
-  LaporanMixerPipa.associate = function(models){
-    LaporanMixerPipa.belongsTo(models.Karyawan, {foreignKey: 'idPelapor',as: 'karyawan'})
-    LaporanMixerPipa.belongsTo(models.Karyawan, {foreignKey: 'idKetua',as: 'ketua'})
-    LaporanMixerPipa.hasMany(models.DLaporanMixerPipa,{foreignKey: 'HLaporanMixerPipaId',as: 'dLaporanMixerPipa'})
+  DLaporanMixerPipa.associate = function(models){
+    DLaporanMixerPipa.hasMany(models.ULaporanMixerPipa,{as: 'uLaporanMixerPipa'})
+    DLaporanMixerPipa.hasMany(models.FLaporanMixerPipa,{as: 'fLaporanMixerPipa'})
+    DLaporanMixerPipa.belongsTo(models.HLaporanMixerPipa, {foreignKey: 'HLaporanMixerPipaId',as: 'hLaporan'})
   }
-  return LaporanMixerPipa;
+  return DLaporanMixerPipa;
 };

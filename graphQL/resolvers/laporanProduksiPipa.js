@@ -357,7 +357,7 @@ module.exports={
       },
     Mutation: {
         tambahLaporanProduksiPipa: async (_,args, {user})=>{
-            var { shift, tipeMesin, jamLaporan, targetProduksi, file, keterangan, totalProduksi, uraian } = args;
+            var { shift, jenisPipa, tipeMesin, jamLaporan, targetProduksi, file, keterangan, totalProduksi, uraian } = args;
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
@@ -390,6 +390,7 @@ module.exports={
                         id: {[Op.startsWith]: id},
                         shift: {[Op.eq]: shift},
                         tipeMesin: {[Op.eq]: tipeMesin},
+                        jenisPipa: {[Op.eq]: jenisPipa},
                     }
                 })
                 if(cekLaporan === null){
@@ -400,7 +401,7 @@ module.exports={
                     })
                     id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
                     const hLaporan = await HLaporanProduksiPipa.create({
-                        id, shift, tipeMesin, warna: "", ukuran: 0, idPelapor, idKetua: 0, dis : 0, pin : 0, 
+                        id, shift, jenisPipa, tipeMesin, warna: "", ukuran: 0, idPelapor, idKetua: 0, dis : 0, pin : 0, 
                         hasilProduksi : 0, jumlahBahan : 0, BS : 0, totalBahan : 0, status
                     },{ transaction: t});
                 }else{

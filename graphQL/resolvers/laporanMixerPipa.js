@@ -1,4 +1,4 @@
-const { LaporanMixerPipa, Karyawan, Jabatan, PembagianAnggota,sequelize } = require('../../models');
+const { LaporanMixerPipa, Karyawan, Jabatan, PembagianAnggota, HLaporanMixerPipa, DLaporanMixerPipa, FLaporanMixerPipa, ULaporanMixerPipa,sequelize } = require('../../models');
 const {Op} = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
@@ -22,6 +22,7 @@ module.exports={
 
                 var orderKu =[];
                 var whereDKu = [];
+                var whereHKu = [];
                 if(bulan !== null){
                     if(bulan.toString() !== "Invalid Date"){
                         var date = new Date(bulan);
@@ -73,11 +74,11 @@ module.exports={
                             ketua: {[Op.eq]: true}
                         }
                     })
-                    whereDKu.push({
+                    whereHKu.push({
                         idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
                     })
                 }
-                laporans = await LaporanMixerPipa.findAndCountAll({
+                laporans = await DLaporanMixerPipa.findAndCountAll({
                     include: [
                         {
                             model: Karyawan,
@@ -86,7 +87,11 @@ module.exports={
                         {
                             model: Karyawan,
                             as: 'ketua',
-                        },
+                        },{
+                            model: HLaporanMixerPipa,
+                            as: 'hLaporan',
+                            where: whereHKu
+                        }
                     ],
                     limit: limit,
                     offset: offset,
@@ -106,10 +111,10 @@ module.exports={
                 var y = date.getFullYear(), m = date.getMonth();
                 var firstDay = dayjs(new Date(y, m, 1)).format('YYYY-MM-DD');
                 var lastDay = dayjs(new Date(y, m + 1, 0)).format('YYYY-MM-DD');
-                var getKaryawan = await LaporanMixerPipa.findAll({
+                var getKaryawan = await HLaporanMixerPipa.findAll({
                     attributes: [
                         'idPelapor',
-                        [sequelize.fn('sum', sequelize.col('totalHasil')), 'jumlahProduksi'],
+                        [sequelize.fn('sum', sequelize.col('totalMix')), 'jumlahProduksi'],
                     ],
                     include:{
                         model: Karyawan,
@@ -126,10 +131,16 @@ module.exports={
                 })
                 var cekProduksi;
                 await Promise.all(getKaryawan.map(async element => {
-                    cekProduksi = await LaporanMixerPipa.count({
+                    cekProduksi = await DLaporanMixerPipa.count({
+                        include:[{
+                            model: HLaporanMixerPipa,
+                            as: 'hLaporan',
+                            where: {
+                                idPelapor: {[Op.eq]: element.idPelapor}
+                            }
+                        }],
                         where: {
                             pernahBanding: {[Op.eq]: true},
-                            idPelapor: {[Op.eq]: element.idPelapor},
                             createdAt: {
                                 [Op.between]: [firstDay, lastDay]
                             }
@@ -137,10 +148,16 @@ module.exports={
                     })
                     element.jumlahBanding = cekProduksi;
                     element.jumlahProduksi = element.dataValues.jumlahProduksi;
-                    cekProduksi = await LaporanMixerPipa.count({
+                    cekProduksi = await DLaporanMixerPipa.count({
+                        include:[{
+                            model: HLaporanMixerPipa,
+                            as: 'hLaporan',
+                            where: {
+                                idPelapor: {[Op.eq]: element.idPelapor}
+                            }
+                        }],
                         where: {
-                            totalHasil: {[Op.lt]: sequelize.col('targetMixer')},
-                            idPelapor: {[Op.eq]: element.idPelapor},
+                            totalHasil: {[Op.lt]: sequelize.col('targetKerja')},
                             createdAt: {
                                 [Op.between]: [firstDay, lastDay]
                             }
@@ -183,17 +200,29 @@ module.exports={
                         }
                     })
                     if(status === 0){
-                        laporans = await LaporanMixerPipa.findAndCountAll({
-                            where: { idPelapor: {[Op.eq]: cekLaporan.idKaryawan} },
+                        laporans = await DLaporanMixerPipa.findAndCountAll({
+                            include:[{
+                                model: HLaporanMixerPipa,
+                                as: 'hLaporan',
+                                where: {
+                                    idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
+                                }
+                            }],
                             limit: limit,
                             offset: offset,
                             order: [['createdAt','DESC']]
                         })
                     }else{
-                        laporans = await LaporanMixerPipa.findAndCountAll({
+                        laporans = await DLaporanMixerPipa.findAndCountAll({
+                            include:[{
+                                model: HLaporanMixerPipa,
+                                as: 'hLaporan',
+                                where: {
+                                    idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
+                                }
+                            }],
                             where: { 
                                 status: {[Op.eq]: status},
-                                idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
                             },
                             limit: limit,
                             offset: offset,
@@ -216,13 +245,21 @@ module.exports={
                     }))
                 }else if(jabatan.tingkatJabatan === 4){
                     if(status === 0){
-                        laporans = await LaporanMixerPipa.findAndCountAll({
+                        laporans = await DLaporanMixerPipa.findAndCountAll({
+                            include:[{
+                                model: HLaporanMixerPipa,
+                                as: 'hLaporan',
+                            }],
                             limit: limit,
                             offset: offset,
                             order: [['createdAt','DESC']]
                         })
                     }else{
-                        laporans = await LaporanMixerPipa.findAndCountAll({
+                        laporans = await DLaporanMixerPipa.findAndCountAll({
+                            include:[{
+                                model: HLaporanMixerPipa,
+                                as: 'hLaporan',
+                            }],
                             where: { status: {[Op.eq]: status}},
                             limit: limit,
                             offset: offset,
@@ -257,7 +294,8 @@ module.exports={
 
         //HRD
         tambahLaporan: async (_,args, {user})=>{
-            var {tipeMesin, bahanDigunakan, totalHasil, targetMixer, file, keterangan} = args;
+            var {tipeMesin, jenisMixer, bahanBaku, totalHasil, targetMixer, file, keterangan} = args;
+            const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 
@@ -269,20 +307,12 @@ module.exports={
                     throw new UserInputError('Error',  {errors: `Akun Anda Tidak Memiliki Hak Untuk Buat Laporan`} )
                 }
                 var pad = "000"
-
-                var tanggalLaporan = new Date();
-                tanggalLaporan = await dayjs(tanggalLaporan).format('YYYY-MM-DD');
-                var cekLaporan = await LaporanMixerPipa.findOne({
-                    where: { 
-                        createdAt: {[Op.startsWith]: tanggalLaporan},
-                        tipeMesin: {[Op.eq]: tipeMesin}
-                    }
-                })
-                if(cekLaporan !== null){
-                    throw new UserInputError('Tidak Bisa Menambah Laporan Lagi',  {errors: `Sudah Ada Laporan Masuk Untuk ${tipeMesin} Hari Ini`} )
-                }
                 var counterTgl = dayjs(new Date()).format('DDMMYYYY');
                 var id = "H" + counterTgl;
+                var idDLaporan = "D" + counterTgl;
+                var idFLaporan = "F" + counterTgl;
+                var idULaporan = "U" + counterTgl;
+                var counterId;
                 var idPelapor = user.userJWT.id;
                 var idKetua = 0;
                 var status = 1;
@@ -290,25 +320,66 @@ module.exports={
                 var laporan = null;
                 var pernahBanding = false;
 
-                cekLaporan = await LaporanMixerPipa.count({
+                cekLaporan = await HLaporanMixerPipa.findOne({
                     where: {
-                        createdAt: {[Op.startsWith]: tanggalLaporan},
+                        id: {[Op.startsWith]: id},
+                        jenisMixer: {[Op.eq]: jenisMixer},
+                        tipeMesin: {[Op.eq]: tipeMesin}
                     }
                 })
-                id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
-                
-                if(file === null){
-                    laporan = await LaporanMixerPipa.create({
-                        id, tipeMesin, bahanDigunakan, totalHasil, targetMixer, 
-                        foto: '-', keterangan, idPelapor, idKetua, status, pernahBanding, keteranganBanding
+                if(cekLaporan === null){
+                    cekLaporan = await HLaporanMixerPipa.count({
+                        where: {
+                            id: {[Op.startsWith]: id},
+                        }
                     })
+                    id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
+                    
+                    laporan = await HLaporanMixerPipa.create({
+                        id, jenisMixer, tipeMesin, idPelapor: user.userJWT.id, idKetua: 0 , totalMix: 0
+                    },{transaction: t})
                 }else{
-                    const { createReadStream, filename, mimetype, encoding } = await file;
+                    id = cekLaporan.id;
+                }
 
-                    const { ext } = path.parse(filename);
-                    var namaFile = id + ext;
+                
+                cekLaporan = await DLaporanMixerPipa.count({
+                    where: {
+                        id: {[Op.startsWith]: idDLaporan},
+                    }
+                })
+                idDLaporan += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
+                
+                laporan = await DLaporanMixerPipa.create({
+                    id: idDLaporan, HLaporanMixerPipaId: id, totalHasil, targetKerja: targetMixer, keterangan, status, pernahBanding, keteranganBanding
+                },{transaction: t})
 
+                
+                cekLaporan = await ULaporanMixerPipa.count({
+                    where: {
+                        id: {[Op.startsWith]: idULaporan}
+                    }
+                })
+                var counterId = cekLaporan;
+                var counterIdULaporan;
+                await Promise.all(bahanBaku.map(async element => {
+                    counterId = counterId + 1;
+                    counterIdULaporan = idULaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
+                    await ULaporanMixerPipa.create({
+                        id: counterIdULaporan, DLaporanMixerPipa: idDLaporan, namaBahan: element.namaBahan, totalBahan: element.totalBahan,
+                        diHapus: false
+                    },{transaction: t})
+                }));
+                if(file !== null){
                     const storeUpload = async ({ stream, filename, mimetype, encoding }) => {
+                        cekLaporan = await FLaporanMixerPipa.count({
+                            where: {
+                                id: {[Op.startsWith]: idFLaporan},
+                            }
+                        })
+                        counterId = idFLaporan + pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
+                        const { ext } = path.parse(filename);
+                        var namaFile = counterId + ext;
                         const pathName = path.join(__dirname, `../../public/laporan/Mixer Pipa/${namaFile}`)
                     
                         return new Promise( (resolve, reject) =>
@@ -316,10 +387,9 @@ module.exports={
                                 .pipe(fs.createWriteStream(pathName))
                                 .on("finish",async () => { 
                                     var foto = `http://localhost:4000/laporan/Mixer Pipa/${namaFile}`
-                                    laporan = await LaporanMixerPipa.create({
-                                        id, tipeMesin, bahanDigunakan, totalHasil, targetMixer, 
-                                        foto, keterangan, idPelapor, idKetua, status, pernahBanding, keteranganBanding
-                                    })
+                                    laporan = await FLaporanMixerPipa.create({
+                                        id: counterId, DLaporanMixerPipaId: idDLaporan, foto
+                                    },{transaction: t})
                                     resolve();
                                 })
                                 .on("error", reject)
@@ -332,68 +402,127 @@ module.exports={
                         const file = await storeUpload({ stream, filename, mimetype, encoding });
                     };
 
-                    const upload = await processUpload(file);
+                    await Promise.all(file.map(async element => {
+                        const upload = await processUpload(element);
+                    }))
                 }
                 
-                
+                t.commit()
                 return laporan;
             }catch(err){
+                console.log(err);
+                t.rollback()
                 throw err
             }
         },
         updateLaporan: async (_,args,{user}) =>{
-            var {id, tipeMesin, bahanDigunakan, totalHasil, keterangan} = args;
+            var {id, bahanBaku, totalHasil, keterangan} = args;
+            const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
-                
-                var cekLaporan = await LaporanMixerPipa.findOne({
+                var cekLaporan = await DLaporanMixerPipa.findOne({
+                    where: {id: {[Op.eq]: id}}
+                })
+
+                cekLaporan = await HLaporanMixerPipa.findOne({
                     where: {
-                        id: {[Op.eq]: id},
+                        id: {[Op.eq]: cekLaporan.HLaporanMixerPipaId},
                         idPelapor: {[Op.eq]: user.userJWT.id}
                     }
                 })
                 if(cekLaporan === null){
                     throw new UserInputError('Error',  {errors: `Akun Anda Tidak Memiliki Hak Untuk Laporan Ini`} )
                 }
-                var tanggalLaporan = new Date();
-                tanggalLaporan = dayjs(tanggalLaporan).format('YYYY-MM-DD');
-                var cekLaporan = await LaporanMixerPipa.findOne({
-                    where: { 
-                        createdAt: {[Op.startsWith]: tanggalLaporan},
-                        tipeMesin: {[Op.eq]: tipeMesin}
-                    }
-                })
-                if(cekLaporan !== null){
-                    throw new UserInputError('Tidak Bisa Menambah Laporan Lagi',  {errors: `Sudah Ada Laporan Masuk Untuk ${tipeMesin} Hari Ini`} )
-                }
-                var laporan = await LaporanMixerPipa.update({
+                var laporan = await DLaporanMixerPipa.update({
                     status: 1, 
-                    tipeMesin,
-                    bahanDigunakan,
                     totalHasil,
                     keterangan,
                 },{
-                    where: {id: {[Op.eq]: id}}
+                    where: {id: {[Op.eq]: id}},
+                    transaction: t 
                 });
+                var counterId = id.replace('D','U').slice(0,9);
+                var cekLaporan = await ULaporanMixerPipa.count({
+                    where: {
+                        id: {[Op.startsWith]: counterId}
+                    }
+                })
+                var counterIdULaporan;
+                await Promise.all(bahanBaku.map( async element => {
+                    if(element.baru === true){
+                        cekLaporan += 1;
+                        counterIdULaporan = counterId + pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
+                        await ULaporanMixerPipa.create({
+                            id: counterIdULaporan, DLaporanMixerPipaId: id, namaBahan: element.namaBahan,
+                            totalBahan: element.totalBahan, diHapus : false
+                        },{transaction: t})
+                    }
+                    else if(element.action === 'hapus'){
+                        await ULaporanMixerPipa.update({
+                            diHapus: true,
+                        },{
+                            where: {id: {[Op.eq]: element.id}},
+                            transaction: t
+                        })
+                    }
+                    else if(element.action === 'edit'){
+                        await ULaporanMixerPipa.update({
+                            namaBahan: element.namaBahan,
+                            totalBahan: element.totalBahan,
+                        },{
+                            where: {id: {[Op.eq]: element.id}},
+                            transaction: t
+                        })
+                    }
+                }))
+                t.commit()
                 return laporan;
             }catch(err){
+                console.log(err);
+                t.rollback()
                 throw err
             }
         },
         updateStatusLaporan: async (_,args,{user})=>{
             var {id, status, keteranganBanding} = args;
+            const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
+                var laporan = null;
+                var cekLaporan = await DLaporanMixerPipa.findOne({
+                    where: {id: {[Op.eq]: id}}
+                });
                 if(status === 3){
-                    return await LaporanMixerPipa.update({status: status, idKetua: user.userJWT.id, pernahBanding: true, keteranganBanding: keteranganBanding},{
-                        where: {id: {[Op.eq]: id}}
+                    await DLaporanMixerPipa.update({status: status},{
+                        where: {id: {[Op.eq]: id}},
+                        transaction: t
                     });
+                    await HLaporanMixerPipa.update({idKetua: user.userJWT.id, pernahBanding: true, keteranganBanding: keteranganBanding},{
+                        where: {id: {[Op.eq]: cekLaporan.HLaporanMixerPipaId}},
+                        transaction: t
+                    })
                 }else{
-                    return await LaporanMixerPipa.update({status: status, idKetua: user.userJWT.id},{
-                        where: {id: {[Op.eq]: id}}
+                    var idHLaporan = cekLaporan.HLaporanMixerPipaId;
+                    var totalHasil = cekLaporan.totalHasil;
+                    cekLaporan = await HLaporanMixerPipa.findOne({
+                        where: {
+                            id: {[Op.eq]: idHLaporan}
+                        }
+                    })
+                    await HLaporanMixerPipa.update({ idKetua: user.userJWT.id, totalMix: (cekLaporan.totalMix + totalHasil)},{
+                        where: {id: {[Op.eq]: idHLaporan}},
+                        transaction: t
+                    })
+                    await DLaporanMixerPipa.update({status: status},{
+                        where: {id: {[Op.eq]: id}},
+                        transaction: t
                     });
                 }
+                t.commit();
+                return laporan;
             }catch(err){
+                console.log(err);
+                t.rollback()
                 throw err
             }
         }
