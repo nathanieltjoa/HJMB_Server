@@ -45,6 +45,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
+    gelombang: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: true,
+    },
     panjang: {
       type: DataTypes.FLOAT,
       allowNull: false,

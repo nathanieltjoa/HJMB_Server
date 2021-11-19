@@ -25,32 +25,27 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
-    merkBarang: {
+    idNota: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
-    tipeBarang: {
+    penerima: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
-    ukuranBarang: {
+    keterangan: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
-    jumlahBarang: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      unique: true,
-    },
-    satuanBarang: {
+    foto: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
-    diHapus: {
+    diBatalkan: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       unique: true,
@@ -61,7 +56,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'dlaporanarmada'
   });
   DLaporanArmada.associate = function(models){
-    DLaporanArmada.belongsTo(models.HLaporanArmada, {foreignKey: 'HLaporanArmadaId',as: 'dLaporanArmada'})
+    DLaporanArmada.belongsTo(models.HLaporanArmada, {foreignKey: 'HLaporanArmadaId',as: 'hLaporan'})
+    DLaporanArmada.hasMany(models.ULaporanArmada, {foreignKey: 'DLaporanArmadaId',as: 'uLaporan'})
   }
   return DLaporanArmada;
 };

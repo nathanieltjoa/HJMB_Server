@@ -365,6 +365,7 @@ module.exports = gql`
       totalMix: Int 
       createdAt: MyDate
       namaPelapor: String
+      jumlahBanding: Int 
       karyawan: Karyawan
       ketua: Karyawan
     }
@@ -378,8 +379,8 @@ module.exports = gql`
       pernahBanding: Boolean 
       keteranganBanding: String 
       createdAt: MyDate
-      uLaporanMixerPipa: [ULaporanMixerPipa]
-      fLaporanMixerPipa: [FLaporanMixerPipa]
+      uLaporan: [ULaporanMixerPipa]
+      fLaporan: [FLaporanMixerPipa]
       hLaporan: HLaporanMixerPipa
     }
     type ULaporanMixerPipa{
@@ -478,6 +479,14 @@ module.exports = gql`
       createdAt: MyDate
       shift: String 
       tipeMesin: String 
+      uLaporan: [ULaporanQualityControl]
+      hLaporan: HLaporanQualityControlPipa
+    }
+    type ULaporanQualityControl{
+      id: String 
+      DLaporanQualityControlPipaId: String
+      namaBagian: String  
+      nilai: Float 
     }
     type HLaporanStokistPipa{
       id: String 
@@ -509,6 +518,39 @@ module.exports = gql`
       totalBS: Int 
       laporanStokStokistPipa: LaporanStok
     }
+    type HLaporanStokRusak{
+      id: String 
+      idPelapor: Int 
+      foto: String 
+      keterangan: String 
+      createdAt: MyDate
+      karyawan: Karyawan
+      dLaporanStokRUsak: [DLaporanStokRusak]
+    }
+    type DLaporanStokRusak{
+      id: String 
+      HLaporanStokRusakId: String 
+      LaporanStokId: Int
+      jumlah: Int 
+      barang: LaporanStok
+    }
+    type HLaporanBarangRetur{
+      id: String 
+      idPelapor: Int
+      idNota: String  
+      foto: String 
+      keterangan: String 
+      createdAt: MyDate
+      karyawan: Karyawan
+      dLaporanStokRUsak: [DLaporanStokRusak]
+    }
+    type DLaporanBarangRetur{
+      id: String 
+      HLaporanBarangReturId: String 
+      LaporanStokId: Int
+      jumlah: Int 
+      barang: LaporanStok
+    }
     type HLaporanKetuaStokistPipa{
       id: String 
       idPelapor: Int 
@@ -535,14 +577,11 @@ module.exports = gql`
     }
     type HLaporanArmada{
       id: String 
-      idNota: String 
+      kendaraan: String 
       idArmada: Int 
       idStokist: Int 
       idSupir: Int 
       idKernet: Int 
-      keterangan: String 
-      penerima: String
-      foto: String  
       status: Int
       pengantaran: MyDate
       kembali: MyDate
@@ -554,10 +593,22 @@ module.exports = gql`
       stokist: Karyawan 
       supir: Karyawan 
       kernet: Karyawan
+      dLaporan: [DLaporanArmada]
     }
     type DLaporanArmada{
       id: String 
       HLaporanArmadaId: String 
+      idNota: String 
+      penerima: String 
+      keterangan: String 
+      foto: String
+      diBatalkan: Boolean
+      hLaporan: HLaporanArmada
+      uLaporan: [ULaporanArmada]
+    }
+    type ULaporanArmada{
+      id: String 
+      DLaporanArmadaId: String 
       merkBarang: String 
       tipeBarang: String 
       ukuranBarang: String 
@@ -618,6 +669,7 @@ module.exports = gql`
     }
     type HLaporanSpandek{
       id: String 
+      shift: String 
       idPelapor: Int 
       idKetua: Int 
       jenisProduk: String 
@@ -637,6 +689,7 @@ module.exports = gql`
       warna: String 
       ukuran: Float
       berat: Float
+      gelombang: Int 
       panjang: Float 
       BS: Float 
       noCoil: String 
@@ -647,12 +700,14 @@ module.exports = gql`
       keteranganBanding: String
       createdAt: MyDate
       namaPelapor: String 
+      shift: String 
       jenisProduk: String 
       hLaporanSpandek: HLaporanSpandek
     }
     type HLaporanHollow{
       id: String 
       idPelapor: Int 
+      shift: String 
       idKetua: Int 
       totalBerat: Float
       totalJumlah: Int 
@@ -669,6 +724,7 @@ module.exports = gql`
       ukuran: String 
       ketebalan: Float 
       berat: Float
+      panjang: Float 
       noCoil: String 
       jumlah: Int 
       BS: Int 
@@ -678,6 +734,7 @@ module.exports = gql`
       pernahBanding: Boolean
       keteranganBanding: String 
       createdAt: MyDate
+      shift: String 
       namaPelapor: String
       hLaporanHollow: HLaporanHollow 
     }
@@ -788,9 +845,13 @@ module.exports = gql`
       count: Int 
       rows: [HLaporanSales]
     }
-    type pageHLaporanMixerPipa{
+    type pageDLaporanMixerPipa{
       count: Int 
       rows: [DLaporanMixerPipa]
+    }
+    type pageHLaporanMixerPipa{
+      count: Int 
+      rows: [HLaporanMixerPipa]
     }
     type pageHLaporanKetuaStokistPipa{
       count: Int 
@@ -800,9 +861,21 @@ module.exports = gql`
       count: Int 
       rows: [HLaporanArmada]
     }
+    type pageDLaporanArmada{
+      count: Int 
+      rows: [DLaporanArmada]
+    }
     type pageHLaporanStokistPipa{
       count: Int 
       rows: [HLaporanStokistPipa]
+    }
+    type pageHLaporanRetur{
+      count: Int 
+      rows: [HLaporanBarangRetur]
+    }
+    type pageHLaporanRusak{
+      count: Int 
+      rows: [HLaporanStokRusak]
     }
     type pageLaporanKeluarMasukPipa{
       count: Int 
@@ -1037,7 +1110,17 @@ module.exports = gql`
       status: Int
       page: Int 
       limit: Int 
+    ): pageDLaporanMixerPipa
+    getHLaporans(
+      page: Int 
+      limit: Int 
     ): pageHLaporanMixerPipa
+    getDetailLaporanMixerPipa(
+      id: String 
+    ): DLaporanMixerPipa
+    getListDetailMixerPipa(
+      id: String 
+    ): [DLaporanMixerPipa]
     getLaporansVerifikasiProduksiPipa(
       status: Int
       page: Int 
@@ -1067,6 +1150,9 @@ module.exports = gql`
     getDLaporanQualityControlPipa(
       HLaporanQualityControlPipaId: String
     ): [DLaporanQualityControlPipa]
+    getDetailLaporanQualityControlPipa(
+      id: String 
+    ): [ULaporanQualityControl]
     getLaporansVerifikasiStokistPipa(
       status: Int
       page: Int 
@@ -1080,15 +1166,43 @@ module.exports = gql`
       page: Int 
       limit: Int 
     ): pageLaporanKeluarMasukPipa
+    getLaporanRetur(
+      page: Int 
+      limit: Int 
+    ): pageHLaporanRetur
+    getLaporanRusak(
+      page: Int 
+      limit: Int 
+    ): pageHLaporanRusak
+    getDLaporanRetur(
+      id: String 
+    ): [DLaporanBarangRetur]
+    getDLaporanRusak(
+      id: String 
+    ): [DLaporanStokRusak]
     getAnggotaArmada: [Karyawan]
     getLaporansKetuaArmada(
       status: Int
       page: Int 
       limit: Int 
+    ): pageDLaporanArmada
+    getULaporanKetuaArmada(
+      id: String
+    ): [ULaporanArmada]
+    getHLaporansKetuaArmada(
+      status: Int
+      page: Int 
+      limit: Int 
     ): pageHLaporanAramada
     getDLaporanKetuaArmada(
-      id: String
+      id: String 
     ): [DLaporanArmada]
+    getDLaporanMasterArmada(
+      id: String 
+    ): [DLaporanArmada]
+    getDaftarPengantaran(
+      tanggal: MyDate
+    ): [HLaporanArmada]
     getStokBarang: [LaporanStok]
     getLaporanCatTegel(
       jenisProduk: String 
@@ -1558,6 +1672,7 @@ module.exports = gql`
       diameter: Float 
       panjang: Float 
       berat: Float 
+      bagianKetebalan: [bahanBakuInput]
     ): DLaporanQualityControlPipa
     updateStatusLaporanQualityControlPipa(
       id: String
@@ -1570,6 +1685,7 @@ module.exports = gql`
       panjang: Float 
       berat: Float 
       keterangan: String
+      bagianKetebalan: [bahanBakuInput]
     ): DLaporanProduksiPipa
     updateHLaporanQualityControlPipa(
       id: String 
@@ -1610,10 +1726,20 @@ module.exports = gql`
       totalBS: Int 
       keterangan: String 
     ): HLaporanKetuaStokistPipa
+    tambahLaporanReturBarang(
+      idNota: String 
+      stokistPipa: [stokistPipaInput]
+      file: Upload 
+      keterangan: String 
+    ): HLaporanBarangRetur
+    tambahLaporanStokRusak(
+      stokistPipa: [stokistPipaInput]
+      file: Upload 
+      keterangan: String 
+    ): HLaporanStokRusak
     tambahLaporanKetuaArmada(
       idNota: String 
-      idSupir: Int 
-      idKernet: Int 
+      kendaraan: String
       penerima: String 
       dLaporanArmada: [dLaporanArmadaInput]
       file: Upload 
@@ -1621,17 +1747,19 @@ module.exports = gql`
     ): HLaporanArmada
     updateLaporanKetuaArmada(
       id: String 
-      idSupir: Int 
-      idKernet: Int 
       penerima: String 
       dLaporanArmada: [dLaporanArmadaInput]
       keterangan: String 
-    ): HLaporanArmada
+    ): DLaporanArmada
     updateStatusLaporanArmada(
       id: String 
       status: Int 
-      penerima: String 
+      idSupir: Int 
+      idKernet: Int 
     ): HLaporanArmada
+    updateStatusNotaArmada(
+      id: String 
+    ): DLaporanArmada
     tambahLaporanKetuaCatTegel(
       jenisProduk: String 
       merkProduk: String 
@@ -1652,9 +1780,11 @@ module.exports = gql`
       bahanCatTegel: [ULaporanCatTegelInput]
     ): DLaporanCatTegel
     tambahLaporanHollow(
+      shift: String 
       ukuran: String 
       ketebalan: Float
       berat: Float
+      panjang: Float 
       noCoil: String 
       jumlah: Int 
       BS: Int 
@@ -1663,10 +1793,12 @@ module.exports = gql`
     ): HLaporanHollow
     tambahLaporanSpandek(
       jenisProduk: String 
+      shift: String 
       namaPemesan: String 
       warna: String 
       ukuran: Float 
       berat: Float
+      gelombang: Int 
       panjang: Float 
       BS: Float 
       noCoil: String 
@@ -1678,6 +1810,7 @@ module.exports = gql`
       ukuran: String 
       ketebalan: Float
       berat: Float
+      panjang: Float 
       noCoil: String 
       jumlah: Int 
       BS: Int 
@@ -1689,6 +1822,7 @@ module.exports = gql`
       warna: String 
       ukuran: Float 
       berat: Float
+      gelombang: Int 
       panjang: Float 
       BS: Float 
       noCoil: String 

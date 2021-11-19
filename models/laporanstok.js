@@ -63,6 +63,8 @@ module.exports = (sequelize, DataTypes) => {
   LaporanStok.associate = function(models){
     LaporanStok.hasMany(models.LaporanKeluarMasukPipa,{as: 'laporanStokKeluarMasukPipa'})
     LaporanStok.hasMany(models.DLaporanStokistPipa,{as: 'laporanStokStokistPipa'})
+    LaporanStok.hasMany(models.DLaporanBarangRetur,{as: 'dLaporanStokBarangRetur'})
+    LaporanStok.hasMany(models.DLaporanStokRusak,{as: 'dLaporanStokBarangRusak'})
   }
   return LaporanStok;
 };

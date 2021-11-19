@@ -181,10 +181,6 @@ module.exports={
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 var laporans;
-                var laporanBaru = [];
-                var cekKaryawan;
-                var namaKaryawan;
-                var laporan = {};
                 page -= 1;
                 var offset = page ? page * limit: 0;
                 var jabatan = await Jabatan.findOne({
@@ -210,7 +206,11 @@ module.exports={
                             include: [{
                                 model: HLaporanProduksiPipa,
                                 as: 'hLaporan',
-                                where: {idPelapor: {[Op.eq]: cekLaporan.idKaryawan}}
+                                where: {idPelapor: {[Op.eq]: cekLaporan.idKaryawan}},
+                                include: [{
+                                    model: Karyawan,
+                                    as: 'karyawan',
+                                }]
                             }],
                             limit: limit,
                             offset: offset,
@@ -222,64 +222,50 @@ module.exports={
                             , include: [{
                                 model: HLaporanProduksiPipa,
                                 as: 'hLaporan',
-                                where: {idPelapor: {[Op.eq]: cekLaporan.idKaryawan}}
+                                where: {idPelapor: {[Op.eq]: cekLaporan.idKaryawan}},
+                                include: [{
+                                    model: Karyawan,
+                                    as: 'karyawan',
+                                }]
                             }],
                             limit: limit,
                             offset: offset,
                             order: [['createdAt','DESC']]
                         });
                     }
-                    laporan.count = laporans.count;
-                    await Promise.all(laporans.rows.map(async element =>
-                    { 
-                        counterHLaporan = await HLaporanProduksiPipa.findOne({
-                            where: {id: {[Op.eq]: element.HLaporanProduksiPipaId}}
-                        })
-                        namaKaryawan = "-";
-                        if(counterHLaporan.idKetua !== 0){
-                            cekKaryawan = await Karyawan.findOne({
-                                where: {id: {[Op.eq]: counterHLaporan.idKetua}}
-                            })
-                            namaKaryawan = cekKaryawan.nama;
-                        }
-                        element.namaPelapor = namaKaryawan;
-                        element.shift = counterHLaporan.shift;
-                        element.tipeMesin = counterHLaporan.tipeMesin
-                        laporanBaru.push(element);
-                    }))
                 }else if(jabatan.tingkatJabatan === 4){
                     if(status === 0){
                         laporans = await DLaporanProduksiPipa.findAndCountAll({
+                            include: [{
+                                model: HLaporanProduksiPipa,
+                                as: 'hLaporan',
+                                include: [{
+                                    model: Karyawan,
+                                    as: 'karyawan',
+                                }]
+                            }],
                             limit: limit,
                             offset: offset,
                             order: [['createdAt','DESC']]
                         });
                     }else{
                         laporans = await DLaporanProduksiPipa.findAndCountAll({
+                            include: [{
+                                model: HLaporanProduksiPipa,
+                                as: 'hLaporan',
+                                include: [{
+                                    model: Karyawan,
+                                    as: 'karyawan',
+                                }]
+                            }],
                             where: {status: {[Op.eq]: status}},
                             limit: limit,
                             offset: offset,
                             order: [['createdAt','DESC']]
                         });
                     }
-                    laporan.count = laporans.count;
-                    await Promise.all(laporans.rows.map(async (element) =>
-                    { 
-                        counterHLaporan = await HLaporanProduksiPipa.findOne({
-                            where: {id: {[Op.eq]: element.HLaporanProduksiPipaId}}
-                        })
-                        cekKaryawan = await Karyawan.findOne({
-                            where: {id: {[Op.eq]: counterHLaporan.idPelapor}}
-                        })
-                        namaKaryawan = cekKaryawan.nama;
-                        element.namaPelapor = namaKaryawan;
-                        element.shift = counterHLaporan.shift;
-                        element.tipeMesin = counterHLaporan.tipeMesin
-                        laporanBaru.push(element);
-                    }))
                 }
-                laporan.rows = laporanBaru;
-                return laporan;
+                return laporans;
             }catch(err){
                 throw err
             }
@@ -308,30 +294,26 @@ module.exports={
                 var offset = page ? page * limit: 0;
                 if(status === 0){
                     laporans = await HLaporanProduksiPipa.findAndCountAll({
+                        include: [{
+                            model: Karyawan,
+                            as: 'karyawan'
+                        }],
                         limit: limit,
                         offset: offset,
                         order: [['createdAt','DESC']]
                     })
                 }else{
                     laporans = await HLaporanProduksiPipa.findAndCountAll({
+                        include: [{
+                            model: Karyawan,
+                            as: 'karyawan'
+                        }],
                         where: {status: {[Op.eq]: status}},
                         limit: limit,
                         offset: offset,
                         order: [['createdAt','DESC']]
                     })
                 }
-                var laporan = {};
-                laporan.count = laporans.count;
-                await Promise.all(laporans.rows.map(async (element) =>
-                { 
-                    //Cek apakah divisi dari anggota yang request sudah sesuai apa belum
-                    cekKaryawan = await Karyawan.findOne({
-                        where: {id: {[Op.eq]: element.idPelapor}}
-                    })
-                    element.namaPelapor = cekKaryawan.nama;
-                    laporanBaru.push(element);
-                }))
-                laporan.rows = laporanBaru;
                 return laporans;
             }catch(err){
                 throw err

@@ -1,4 +1,4 @@
-const { HLaporanArmada, DLaporanArmada, LaporanKeluarMasukPipa, LaporanStok ,Karyawan, Jabatan, sequelize, PembagianAnggota,User } = require('../../models');
+const { HLaporanArmada, DLaporanArmada, ULaporanArmada,LaporanKeluarMasukPipa, LaporanStok ,Karyawan, Jabatan, sequelize, PembagianAnggota,User } = require('../../models');
 const {Op} = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
@@ -84,6 +84,28 @@ module.exports={
                 throw err
             }
         },
+        getDLaporanMasterArmada: async (_,args,{user}) =>{
+            var {id} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                var laporans = await DLaporanArmada.findAll({
+                    include:[{
+                        model: ULaporanArmada,
+                        as: 'uLaporan',
+                        where: {
+                            diHapus: {[Op.eq]: false}
+                        }
+                    }],
+                    where: {
+                        HLaporanArmadaId: {[Op.eq]: id},
+                    }
+                    ,order: [['createdAt','DESC']]
+                    });
+                return laporans;
+            }catch(err){
+                throw err
+            }
+        },
         getSummaryArmada: async (_,__,{user}) =>{
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
@@ -149,53 +171,100 @@ module.exports={
             var {status, page, limit} = args;
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
-                var cekJabatan = await Jabatan.findOne({
-                    where: {id: {[Op.eq]: user.userJWT.idJabatan}}
-                })
                 var laporans;
-                var laporanBaru = [];
                 page -= 1;
                 var offset = page ? page * limit: 0;
-                var cekKaryawan;
-                var idPelapor;
+                if(status === 0){
+                    laporans = await DLaporanArmada.findAndCountAll({
+                        include:[{
+                            model: HLaporanArmada,
+                            as: 'hLaporan',
+                        }],
+                        limit: limit,
+                        offset: offset,
+                        order: [['createdAt','DESC']]
+                    });
+                }else{
+                    laporans = await DLaporanArmada.findAndCountAll({
+                        include:[{
+                            model: HLaporanArmada,
+                            as: 'hLaporan',
+                            where: {status: {[Op.eq]: status}},
+                        }],
+                        limit: limit,
+                        offset: offset,
+                        order: [['createdAt','DESC']]
+                    });
+                }
+                return laporans;
+            }catch(err){
+                throw err
+            }
+        },
+        getULaporanKetuaArmada: async (_,args,{user}) =>{
+            var {id} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                var laporans = await ULaporanArmada.findAll({
+                        where: {
+                            DLaporanArmadaId: {[Op.eq]: id},
+                            diHapus: {[Op.eq]: false}
+                        }
+                        ,order: [['createdAt','DESC']]
+                    });
+                return laporans;
+            }catch(err){
+                throw err
+            }
+        },
+        getHLaporansKetuaArmada: async (_,args,{user}) =>{
+            var {status, page, limit} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                var laporans;
+                page -= 1;
+                var offset = page ? page * limit: 0;
                 if(status === 0){
                     laporans = await HLaporanArmada.findAndCountAll({
+                        include:[{
+                            model: Karyawan,
+                            as: 'armada',
+                        },{
+                            model: Karyawan,
+                            as: 'stokist',
+                        },{
+                            model: Karyawan,
+                            as: 'supir',
+                        },{
+                            model: Karyawan,
+                            as: 'kernet',
+                        },],
                         limit: limit,
                         offset: offset,
                         order: [['createdAt','DESC']]
                     });
                 }else{
                     laporans = await HLaporanArmada.findAndCountAll({
+                        include:[{
+                            model: Karyawan,
+                            as: 'armada',
+                        },{
+                            model: Karyawan,
+                            as: 'stokist',
+                        },{
+                            model: Karyawan,
+                            as: 'supir',
+                        },{
+                            model: Karyawan,
+                            as: 'kernet',
+                        },],
                         where: {status: {[Op.eq]: status}},
                         limit: limit,
                         offset: offset,
                         order: [['createdAt','DESC']]
                     });
                 }
-                var laporan = {};
-                laporan.count = laporans.count;
-                await Promise.all(laporans.rows.map(async (element) =>
-                { 
-                    //Cek apakah divisi dari anggota yang request sudah sesuai apa belum
-                    cekJabatan.namaJabatan === 'Stokist Pipa'? 
-                        idPelapor = element.idArmada: 
-                        idPelapor = element.idStokist
-                    cekKaryawan = await Karyawan.findOne({
-                        where: {id: {[Op.eq]: idPelapor}}
-                    })
-                    element.namaPelapor = cekKaryawan === null ? "-" : cekKaryawan.nama;
-                    cekKaryawan = await Karyawan.findOne({
-                        where: {id: {[Op.eq]: element.idSupir}}
-                    })
-                    element.namaSupir = cekKaryawan === null ? "-" :  cekKaryawan.nama;
-                    cekKaryawan = await Karyawan.findOne({
-                        where: {id: {[Op.eq]: element.idKernet}}
-                    })
-                    element.namaKernet = cekKaryawan === null ? "-" :  cekKaryawan.nama;
-                    laporanBaru.push(element);
-                }))
-                laporan.rows = laporanBaru;
-                return laporan;
+                return laporans;
             }catch(err){
                 throw err
             }
@@ -205,11 +274,45 @@ module.exports={
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 var laporans = await DLaporanArmada.findAll({
+                    include:[{
+                        model: ULaporanArmada,
+                        as: 'uLaporan',
                         where: {
-                            HLaporanArmadaId: {[Op.eq]: id},
                             diHapus: {[Op.eq]: false}
                         }
-                        ,order: [['createdAt','DESC']]
+                    }],
+                    where: {
+                        HLaporanArmadaId: {[Op.eq]: id},
+                        diBatalkan: {[Op.eq]: false}
+                    }
+                    ,order: [['createdAt','DESC']]
+                    });
+                return laporans;
+            }catch(err){
+                throw err
+            }
+        },
+        getDaftarPengantaran: async (_,args,{user}) =>{
+            var {tanggal} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                tanggal = dayjs(tanggal).format('YYYY-MM-DD')
+                var laporans = await HLaporanArmada.findAll({
+                    include:[{
+                        model: DLaporanArmada,
+                        as: 'dLaporan',
+                        where: {
+                            diBatalkan: {[Op.eq]: false}
+                        }
+                    },{
+                        model: Karyawan,
+                        as: 'supir'
+                    }],
+                    where: {
+                        createdAt: {[Op.startsWith]: tanggal},
+                        status: {[Op.gte]: 3}
+                    }
+                    ,order: [['createdAt','DESC']]
                     });
                 return laporans;
             }catch(err){
@@ -225,7 +328,7 @@ module.exports={
     Mutation: {
         //General
         tambahLaporanKetuaArmada: async (_,args, {user})=>{
-            var {idNota, idSupir, idKernet, penerima, dLaporanArmada, file, keterangan} = args;
+            var {idNota, kendaraan, penerima, dLaporanArmada, file, keterangan} = args;
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
@@ -236,48 +339,68 @@ module.exports={
                 var idArmada = user.userJWT.id;
                 var id = "H" + tglLaporan;
                 var idDLaporan = "D" + tglLaporan;
+                var idULaporan = "U" + tglLaporan;
                 var status = 1;
                 var laporan = null;
-		console.log("masuk");
-		console.log(dayjs(new Date(null)).format('YYYY-MM-DD'));
+                var error = false;
+                console.log("masuk");
+		        console.log(dayjs(new Date(null)).format('YYYY-MM-DD'));
 
-                var cekLaporan = await HLaporanArmada.count({
+                var cekLaporan = await HLaporanArmada.findOne({
                     where: {
-                        id: {[Op.startsWith]: id}
+                        id: {[Op.startsWith]: id},
+                        kendaraan: {[Op.eq]: kendaraan}
                     }
                 })
-                id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
-
-                if(file === null){
-                    cekLaporan = await HLaporanArmada.findOne({
-                        where: { 
-                            idNota: {[Op.eq]: idNota}
+                if(cekLaporan === null){
+                    var counterPengantaran = dayjs(new Date(null)).format('YYYY-MM-DD HH:mm:ss');
+                    var cekLaporan = await HLaporanArmada.count({
+                        where: {
+                            id: {[Op.startsWith]: id}
                         }
                     })
-                    if(cekLaporan === null) {
-                        var counterPengantaran = dayjs(new Date(null)).format('YYYY-MM-DD HH:mm:ss');
-			console.log("pengantaran:");
-			console.log(counterPengantaran);
-                        const hLaporan = await HLaporanArmada.create({
-                            id, idNota, idArmada, idStokist: 0, idSupir, idKernet, 
-                            keterangan, penerima, foto: '-', status, pengantaran: counterPengantaran, 
-                            kembali: counterPengantaran
-                        },{ transaction: t});
-                    }else{
-                        throw new UserInputError('Sudah ada laporan untuk nota ini',  {errors: `Sudah Ada Laporan Untuk Nota ${idNota}`} )
+                    id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
+                    const hLaporan = await HLaporanArmada.create({
+                        id, kendaraan,idArmada, idStokist: 0, idSupir: 0, idKernet: 0, 
+                        status, pengantaran: counterPengantaran, kembali: counterPengantaran
+                    },{ transaction: t});
+                }else{
+                    id = cekLaporan.id;
+                }
+
+
+                if(file === null){
+                    var cekLaporan = await DLaporanArmada.findOne({
+                        where: { 
+                            idNota: {[Op.eq]: idNota},
+                            diBatalkan: {[Op.eq]: false}
+                        }
+                    })
+                    if(cekLaporan !== null) {
+                        throw new UserInputError('Error',  {errors: `Sudah Ada Laporan Untuk Nota ${idNota}`} )
                     }
                     cekLaporan = await DLaporanArmada.count({
                         where: {
                             id: {[Op.startsWith]: idDLaporan}
                         }
                     })
+                    idDLaporan += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
+                    await DLaporanArmada.create({
+                        id: idDLaporan, HLaporanArmadaId: id, idNota, penerima, keterangan, foto: '-', diBatalkan: false
+                    },{ transaction: t});
+
+                    cekLaporan = await ULaporanArmada.count({
+                        where: {
+                            id: {[Op.startsWith]: idULaporan}
+                        }
+                    })
                     var counterId = cekLaporan;
                     var counterIdDLaporan;
                     await Promise.all(dLaporanArmada.map(async element => {
                         counterId = counterId + 1;
-                        counterIdDLaporan = idDLaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
-                        await DLaporanArmada.create({
-                            id: counterIdDLaporan, HLaporanArmadaId: id, merkBarang: 
+                        counterIdDLaporan = idULaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
+                        await ULaporanArmada.create({
+                            id: counterIdDLaporan, DLaporanArmadaId: idDLaporan, merkBarang: 
                             element.merkBarang, tipeBarang: element.tipeBarang, ukuranBarang: 
                             element.ukuranBarang, jumlahBarang: element.jumlahBarang, satuanBarang:
                             'Batang', diHapus: false
@@ -297,33 +420,38 @@ module.exports={
                                 .pipe(fs.createWriteStream(pathName))
                                 .on("finish",async () => {
                                     var foto = `http://localhost:4000/laporan/Armada/${namaFile}`
-                                    var cekLaporan = await HLaporanArmada.findOne({
+                                    var cekLaporan = await DLaporanArmada.findOne({
                                         where: { 
-                                            idNota: {[Op.eq]: idNota}
+                                            idNota: {[Op.eq]: idNota},
+                                            diBatalkan: {[Op.eq]: false}
                                         }
                                     })
-                                    if(cekLaporan === null) {
-                                        var counterPengantaran = dayjs(new Date(null)).format('YYYY-MM-DD HH:mm:ss');
-                                        const hLaporan = await HLaporanArmada.create({
-                                            id, idNota, idArmada, idStokist: 0, idSupir, idKernet, 
-                                            keterangan, penerima, foto, status, pengantaran: counterPengantaran, 
-                                            kembali: counterPengantaran
-                                        },{ transaction: t});
-                                    }else{
-                                        throw new UserInputError('Sudah ada laporan untuk nota ini',  {errors: `Sudah Ada Laporan Untuk Nota ${idNota}`} )
+                                    if(cekLaporan !== null) {
+                                        error = true;
+                                        resolve()
                                     }
                                     cekLaporan = await DLaporanArmada.count({
                                         where: {
                                             id: {[Op.startsWith]: idDLaporan}
                                         }
                                     })
+                                    idDLaporan += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
+                                    await DLaporanArmada.create({
+                                        id: idDLaporan, HLaporanArmadaId: id, idNota, penerima, keterangan, foto, diBatalkan: false
+                                    },{ transaction: t});
+                
+                                    cekLaporan = await ULaporanArmada.count({
+                                        where: {
+                                            id: {[Op.startsWith]: idULaporan}
+                                        }
+                                    })
                                     var counterId = cekLaporan;
                                     var counterIdDLaporan;
                                     await Promise.all(dLaporanArmada.map(async element => {
                                         counterId = counterId + 1;
-                                        counterIdDLaporan = idDLaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
-                                        await DLaporanArmada.create({
-                                            id: counterIdDLaporan, HLaporanArmadaId: id, merkBarang: 
+                                        counterIdDLaporan = idULaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
+                                        await ULaporanArmada.create({
+                                            id: counterIdDLaporan, DLaporanArmadaId: idDLaporan, merkBarang: 
                                             element.merkBarang, tipeBarang: element.tipeBarang, ukuranBarang: 
                                             element.ukuranBarang, jumlahBarang: element.jumlahBarang, satuanBarang:
                                             'Batang', diHapus: false
@@ -344,22 +472,25 @@ module.exports={
                     const upload = await processUpload(file);
                 }
                 
+                if(error){
+                    throw new UserInputError('Error',  {errors: `Sudah Ada Laporan Untuk Nota ${idNota}`} )
+                }
                 t.commit();
                 return laporan;
             }catch(err){
-		console.log(err);
+		        console.log(err);
                 t.rollback();
                 throw err
             }
         },
         updateLaporanKetuaArmada: async (_,args,{user})=>{
-            var {id, idSupir, idKernet, keterangan, penerima, dLaporanArmada} = args;
+            var {id, keterangan, penerima, dLaporanArmada} = args;
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 var pad = "000";
-                var counterId = id.replace('H','D').slice(0,9);
-                var cekLaporan = await DLaporanArmada.count({
+                var counterId = id.replace('D','U').slice(0,9);
+                var cekLaporan = await ULaporanArmada.count({
                     where: {
                         id: {[Op.startsWith]: counterId}
                     }
@@ -369,21 +500,21 @@ module.exports={
                     if(element.baru === true){
                         cekLaporan += 1;
                         counterIdDLaporan = counterId + pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
-                        await DLaporanArmada.create({
-                            id: counterIdDLaporan, HLaporanArmadaId: id, merkBarang: element.merkBarang,
+                        await ULaporanArmada.create({
+                            id: counterIdDLaporan, DLaporanArmadaId: id, merkBarang: element.merkBarang,
                             tipeBarang: element.tipeBarang, ukuranBarang: element.ukuranBarang, 
                             jumlahBarang: element.jumlahBarang, satuanBarang: 'Batang', diHapus : false
                         },{transaction: t})
                     }
                     else if(element.action === 'hapus'){
-                        await DLaporanArmada.update({
+                        await ULaporanArmada.update({
                             diHapus: true,
                         },{
                             where: {id: {[Op.eq]: element.id}},
                             transaction: t
                         })
                     }else if(element.action === 'edit'){
-                        await DLaporanArmada.update({
+                        await ULaporanArmada.update({
                             merkBarang: element.merkBarang,
                             tipeBarang: element.tipeBarang,
                             ukuranBarang: element.ukuranBarang,
@@ -394,10 +525,8 @@ module.exports={
                         })
                     }
                 }))
-                var laporan = await HLaporanArmada.update({
+                var laporan = await DLaporanArmada.update({
                     penerima: penerima,
-                    idSupir: idSupir,
-                    idKernet: idKernet,
                     keterangan: keterangan,
                 },{
                     where: {id: {[Op.eq]: id}},
@@ -406,12 +535,13 @@ module.exports={
                 t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 t.rollback();
                 throw err
             }
         },
         updateStatusLaporanArmada: async (_,args,{user})=>{
-            var {id, status, penerima} = args;
+            var {id, status, idSupir, idKernet} = args;
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
@@ -428,9 +558,16 @@ module.exports={
                         where: {id: {[Op.eq]: id}}
                     })
                     var dLaporan = await DLaporanArmada.findAll({
+                        include:[{
+                            model: ULaporanArmada,
+                            as: 'uLaporan',
+                            where: {
+                                diHapus: {[Op.eq]: false}
+                            }
+                        }],
                         where: {
                             HLaporanArmadaId: {[Op.eq]: id},
-                            diHapus: false,
+                            diBatalkan: {[Op.eq]: false},
                         }
                     })
                     var cekLaporan;
@@ -447,55 +584,61 @@ module.exports={
                     })
                     var error = false;
                     var inputBarang = [];
-                    await Promise.all(dLaporan.map(async (element)=> {
-                        barang = await LaporanStok.findOne({
-                            where: {
-                                jenisBarang: {[Op.eq]: "Pipa"},
-                                merkBarang: {[Op.eq]: element.merkBarang},
-                                tipeBarang: {[Op.eq]: element.tipeBarang},
-                                ukuranBarang: {[Op.eq]: element.ukuranBarang}
-                            }
-                        })
-                        if(barang === null){
-                            error = true;
-                            namaBarang = element.merkBarang + " " + element.tipeBarang + " " + element.ukuranBarang;
-                            throw new UserInputError(`${namaBarang} Belum Terdaftar Di Gudang`,  {errors: `${namaBarang} Belum Terdaftar Di Gudang`} )
-                        }else{
-                            namaBarang = element.merkBarang + " " + element.tipeBarang + " " + element.ukuranBarang;
-                            jumlahBarang = parseInt(barang.jumlahBarang) - parseInt(element.jumlahBarang);
-                            if(jumlahBarang < 0){
-                                error = true;
-                                throw new UserInputError(`${namaBarang} Tidak Mencukupi`,  {errors: `${namaBarang} Tidak Mencukupi Stok`} )
-                            }
-                            await LaporanStok.update({
-                                jumlahBarang: jumlahBarang
-                            },{
-                                where: {id: {[Op.eq]: barang.id}},
-                                transaction: t
+                    await Promise.all(dLaporan.map(async (laporan)=> {
+                        await Promise.all(laporan.uLaporan.map(async (element)=> {
+                            barang = await LaporanStok.findOne({
+                                where: {
+                                    jenisBarang: {[Op.eq]: "Pipa"},
+                                    merkBarang: {[Op.eq]: element.merkBarang},
+                                    tipeBarang: {[Op.eq]: element.tipeBarang},
+                                    ukuranBarang: {[Op.eq]: element.ukuranBarang}
+                                }
                             })
-                        }
-                    }))
-                    await Promise.all(dLaporan.map(async element => {
-                        barang = await LaporanStok.findOne({
-                            where: {
-                                jenisBarang: {[Op.eq]: "Pipa"},
-                                merkBarang: {[Op.eq]: element.merkBarang},
-                                tipeBarang: {[Op.eq]: element.tipeBarang},
-                                ukuranBarang: {[Op.eq]: element.ukuranBarang}
+                            if(barang === null){
+                                error = true;
+                                namaBarang = element.merkBarang + " " + element.tipeBarang + " " + element.ukuranBarang;
+                                throw new UserInputError(`${namaBarang} Belum Terdaftar Di Gudang`,  {errors: `${namaBarang} Belum Terdaftar Di Gudang`} )
+                            }else{
+                                namaBarang = element.merkBarang + " " + element.tipeBarang + " " + element.ukuranBarang;
+                                jumlahBarang = parseInt(barang.jumlahBarang) - parseInt(element.jumlahBarang);
+                                if(jumlahBarang < 0){
+                                    error = true;
+                                    throw new UserInputError(`${namaBarang} Tidak Mencukupi`,  {errors: `${namaBarang} Tidak Mencukupi Stok`} )
+                                }
+                                await LaporanStok.update({
+                                    jumlahBarang: jumlahBarang
+                                },{
+                                    where: {id: {[Op.eq]: barang.id}},
+                                    transaction: t
+                                })
                             }
-                        })
-                        cekLaporan += 1;
-                        idLaporanKMPipa = counterId + pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
-                        await LaporanKeluarMasukPipa.create({
-                            id: idLaporanKMPipa, LaporanStokId: barang.id, terimaLaporan: penerima + ` (Id Nota: ${laporans.idNota})`,
-                             jenisLaporan: 'keluar', jumlahLaporan: element.jumlahBarang
-                        },{transaction: t})
-                        cekLaporan = cekLaporan + 1;
+                        }))
+                    }))
+                    await Promise.all(dLaporan.map(async laporan => {
+                        await Promise.all(laporan.uLaporan.map(async element => {
+                            barang = await LaporanStok.findOne({
+                                where: {
+                                    jenisBarang: {[Op.eq]: "Pipa"},
+                                    merkBarang: {[Op.eq]: element.merkBarang},
+                                    tipeBarang: {[Op.eq]: element.tipeBarang},
+                                    ukuranBarang: {[Op.eq]: element.ukuranBarang}
+                                }
+                            })
+                            cekLaporan += 1;
+                            idLaporanKMPipa = counterId + pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
+                            await LaporanKeluarMasukPipa.create({
+                                id: idLaporanKMPipa, LaporanStokId: barang.id, terimaLaporan: laporan.penerima + ` (Id Nota: ${laporan.idNota})`,
+                                    jenisLaporan: 'keluar', jumlahLaporan: element.jumlahBarang
+                            },{transaction: t})
+                            cekLaporan = cekLaporan + 1;
+                        }))
                     }))
                 }else if(status === 3){
                     var laporans = await HLaporanArmada.update({
                         status: status,
-                        pengantaran: new Date()
+                        pengantaran: new Date(),
+                        idSupir: idSupir,
+                        idKernet: idKernet
                     },{
                         where: {id: {[Op.eq]: id}},
                         transaction: t
@@ -512,7 +655,23 @@ module.exports={
                 t.commit()
                 return laporans;
             }catch(err){
+                console.log(err);
                 t.rollback();
+                throw err
+            }
+        },
+        updateStatusNotaArmada: async (_,args,{user})=>{
+            var {id} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                    var laporans = await DLaporanArmada.update({
+                        diBatalkan: true
+                    },{
+                        where: {id: {[Op.eq]: id}},
+                    })
+                return laporans;
+            }catch(err){
+                console.log(err);
                 throw err
             }
         },

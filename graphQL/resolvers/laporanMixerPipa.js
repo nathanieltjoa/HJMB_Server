@@ -78,7 +78,10 @@ module.exports={
                         idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
                     })
                 }
-                laporans = await DLaporanMixerPipa.findAndCountAll({
+                var laporan ={};
+                var laporanBaru = [];
+                var cekLaporan;
+                laporans = await HLaporanMixerPipa.findAndCountAll({
                     include: [
                         {
                             model: Karyawan,
@@ -88,17 +91,31 @@ module.exports={
                             model: Karyawan,
                             as: 'ketua',
                         },{
-                            model: HLaporanMixerPipa,
-                            as: 'hLaporan',
-                            where: whereHKu
+                            model: DLaporanMixerPipa,
+                            as: 'dLaporanMixerPipa',
+                            where: whereDKu
                         }
                     ],
                     limit: limit,
                     offset: offset,
                     order: orderKu,
-                    where: whereDKu
+                    where: whereHKu,
+                    subQuery: false,
                 });
-                return laporans;
+                laporan.count = laporans.count
+                await Promise.all(laporans.rows.map(async element =>
+                    { 
+                        cekLaporan = await DLaporanMixerPipa.count({
+                            where: {
+                                HLaporanMixerPipaId: {[Op.eq]: element.id},
+                                pernahBanding: {[Op.eq]: true}
+                            }
+                        })
+                        element.jumlahBanding = cekLaporan;
+                        laporanBaru.push(element);
+                    }))
+                laporan.rows = laporanBaru;
+                return laporan;
             }catch(err){
                 throw err
             }
@@ -175,12 +192,8 @@ module.exports={
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 var laporans;
-                var laporanBaru = [];
                 page -= 1;
-                var laporan = {};
                 var offset = page ? page * limit: 0;
-                var cekKaryawan;
-                var namaKaryawan;
                 var jabatan = await Jabatan.findOne({
                     where: { id: {[Op.eq]: user.userJWT.idJabatan}}
                 })
@@ -206,7 +219,11 @@ module.exports={
                                 as: 'hLaporan',
                                 where: {
                                     idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
-                                }
+                                },
+                                include:[{
+                                    model: Karyawan,
+                                    as: 'karyawan'
+                                }]
                             }],
                             limit: limit,
                             offset: offset,
@@ -219,7 +236,11 @@ module.exports={
                                 as: 'hLaporan',
                                 where: {
                                     idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
-                                }
+                                },
+                                include:[{
+                                    model: Karyawan,
+                                    as: 'karyawan'
+                                }]
                             }],
                             where: { 
                                 status: {[Op.eq]: status},
@@ -229,26 +250,16 @@ module.exports={
                             order: [['createdAt','DESC']]
                         })
                     }
-                    laporan.count = laporans.count;
-                    await Promise.all(laporans.rows.map(async (element) =>
-                    { 
-                        namaKaryawan = "-";
-                        if(element.idKetua !== 0){
-                            //Cek apakah divisi dari anggota yang request sudah sesuai apa belum
-                            cekKaryawan = await Karyawan.findOne({
-                                where: {id: {[Op.eq]: element.idKetua}}
-                            })
-                            namaKaryawan = cekKaryawan.nama;
-                        }
-                        element.namaPelapor = namaKaryawan;
-                        laporanBaru.push(element);
-                    }))
                 }else if(jabatan.tingkatJabatan === 4){
                     if(status === 0){
                         laporans = await DLaporanMixerPipa.findAndCountAll({
                             include:[{
                                 model: HLaporanMixerPipa,
                                 as: 'hLaporan',
+                                include:[{
+                                    model: Karyawan,
+                                    as: 'karyawan'
+                                }]
                             }],
                             limit: limit,
                             offset: offset,
@@ -259,6 +270,10 @@ module.exports={
                             include:[{
                                 model: HLaporanMixerPipa,
                                 as: 'hLaporan',
+                                include:[{
+                                    model: Karyawan,
+                                    as: 'karyawan'
+                                }]
                             }],
                             where: { status: {[Op.eq]: status}},
                             limit: limit,
@@ -266,23 +281,84 @@ module.exports={
                             order: [['createdAt','DESC']]
                         })
                     }
-                    laporan.count = laporans.count;
-                    await Promise.all(laporans.rows.map(async (element) =>
-                    { 
-                        //Cek apakah divisi dari anggota yang request sudah sesuai apa belum
-                        cekKaryawan = await Karyawan.findOne({
-                            where: {id: {[Op.eq]: element.idPelapor}}
-                        })
-                        element.namaPelapor = cekKaryawan.nama;
-                        laporanBaru.push(element);
-                    }))
                 }
-                laporan.rows = laporanBaru;
                 return laporans;
             }catch(err){
                 throw err
             }
-        }
+        },
+        getHLaporans: async (_,args,{user}) =>{
+            var {status, page, limit} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                page -= 1;
+                var offset = page ? page * limit: 0;
+                var laporans = await HLaporanMixerPipa.findAndCountAll({
+                    include:[{
+                        model: Karyawan,
+                        as: 'karyawan'
+                    }],
+                    limit: limit,
+                    offset: offset,
+                    order: [['createdAt','DESC']]
+                })
+                return laporans;
+            }catch(err){
+                throw err
+            }
+        },
+        getListDetailMixerPipa: async (_,args,{user}) =>{
+            var {id} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                
+                var getKaryawan = await DLaporanMixerPipa.findAll({
+                    include:[{
+                        model: ULaporanMixerPipa,
+                        as: 'uLaporan',
+                        where: {
+                            diHapus: {[Op.eq]: false}
+                        }
+                    },{
+                        model: FLaporanMixerPipa,
+                        as: 'fLaporan'
+                    }],
+                    where: {
+                        HLaporanMixerPipaId: {[Op.eq]: id}
+                    },
+                })
+                console.log(getKaryawan);
+                return getKaryawan;
+            }catch(err){
+                throw err
+            }
+        },
+        getDetailLaporanMixerPipa: async (_,args,{user}) =>{
+            var {id} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                
+                var getKaryawan = await DLaporanMixerPipa.findOne({
+                    include:[{
+                        model: ULaporanMixerPipa,
+                        as: 'uLaporan',
+                        where: {
+                            diHapus: {[Op.eq]: false}
+                        }
+                    },{
+                        model: FLaporanMixerPipa,
+                        as: 'fLaporan'
+                    }],
+                    where: {
+                        id: {[Op.eq]: id}
+                    },
+                })
+                console.log(getKaryawan);
+                return getKaryawan;
+            }catch(err){
+                throw err
+            }
+        },
         //HRD
         //Direktur
         //Staf Keuangan
@@ -366,44 +442,54 @@ module.exports={
                     counterId = counterId + 1;
                     counterIdULaporan = idULaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
                     await ULaporanMixerPipa.create({
-                        id: counterIdULaporan, DLaporanMixerPipa: idDLaporan, namaBahan: element.namaBahan, totalBahan: element.totalBahan,
+                        id: counterIdULaporan, DLaporanMixerPipaId: idDLaporan, namaBahan: element.namaBahan, totalBahan: element.totalBahan,
                         diHapus: false
                     },{transaction: t})
                 }));
+
+                cekLaporan = await FLaporanMixerPipa.count({
+                    where: {
+                        id: {[Op.startsWith]: idFLaporan},
+                    }
+                })
                 if(file !== null){
-                    const storeUpload = async ({ stream, filename, mimetype, encoding }) => {
-                        cekLaporan = await FLaporanMixerPipa.count({
-                            where: {
-                                id: {[Op.startsWith]: idFLaporan},
-                            }
-                        })
-                        counterId = idFLaporan + pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
+                    var listId = [];
+                    const storeUpload = async ({ stream, filename, mimetype, encoding, counter }) => {
+                        counterId = idFLaporan + pad.substring(0, pad.length - counter.toString().length) + counter.toString();
                         const { ext } = path.parse(filename);
                         var namaFile = counterId + ext;
+                        listId.push({
+                            id: counterId,
+                            foto: namaFile
+                        })
                         const pathName = path.join(__dirname, `../../public/laporan/Mixer Pipa/${namaFile}`)
                     
-                        return new Promise( (resolve, reject) =>
+                        return await new Promise( (resolve, reject) =>
                             stream
                                 .pipe(fs.createWriteStream(pathName))
                                 .on("finish",async () => { 
-                                    var foto = `http://localhost:4000/laporan/Mixer Pipa/${namaFile}`
-                                    laporan = await FLaporanMixerPipa.create({
-                                        id: counterId, DLaporanMixerPipaId: idDLaporan, foto
-                                    },{transaction: t})
                                     resolve();
                                 })
                                 .on("error", reject)
                         );
                     };
 
-                    const processUpload = async (upload) => {
+                    const processUpload = async (upload, counter) => {
                         const { createReadStream, filename, mimetype, encoding } = await upload;
                         const stream = createReadStream();
-                        const file = await storeUpload({ stream, filename, mimetype, encoding });
+                        const file = await storeUpload({ stream, filename, mimetype, encoding, counter });
                     };
 
                     await Promise.all(file.map(async element => {
-                        const upload = await processUpload(element);
+                        cekLaporan += 1;
+                        const upload = await processUpload(element, cekLaporan);
+                    }))
+                    console.log(listId);
+                    await Promise.all(listId.map(async element => {
+                        var foto = `http://localhost:4000/laporan/Mixer Pipa/${element.foto}`
+                        laporan = await FLaporanMixerPipa.create({
+                            id: element.id, DLaporanMixerPipaId: idDLaporan, foto
+                        },{transaction: t})
                     }))
                 }
                 
@@ -420,6 +506,7 @@ module.exports={
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
+                var pad="000";
                 var cekLaporan = await DLaporanMixerPipa.findOne({
                     where: {id: {[Op.eq]: id}}
                 })
@@ -448,6 +535,7 @@ module.exports={
                     }
                 })
                 var counterIdULaporan;
+                console.log(bahanBaku);
                 await Promise.all(bahanBaku.map( async element => {
                     if(element.baru === true){
                         cekLaporan += 1;
@@ -493,11 +581,11 @@ module.exports={
                     where: {id: {[Op.eq]: id}}
                 });
                 if(status === 3){
-                    await DLaporanMixerPipa.update({status: status},{
+                    await DLaporanMixerPipa.update({status: status, pernahBanding: true, keteranganBanding: keteranganBanding},{
                         where: {id: {[Op.eq]: id}},
                         transaction: t
                     });
-                    await HLaporanMixerPipa.update({idKetua: user.userJWT.id, pernahBanding: true, keteranganBanding: keteranganBanding},{
+                    await HLaporanMixerPipa.update({idKetua: user.userJWT.id},{
                         where: {id: {[Op.eq]: cekLaporan.HLaporanMixerPipaId}},
                         transaction: t
                     })

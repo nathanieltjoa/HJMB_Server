@@ -65,8 +65,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'dlaporanmixerpipa',
   });
   DLaporanMixerPipa.associate = function(models){
-    DLaporanMixerPipa.hasMany(models.ULaporanMixerPipa,{as: 'uLaporanMixerPipa'})
-    DLaporanMixerPipa.hasMany(models.FLaporanMixerPipa,{as: 'fLaporanMixerPipa'})
+    DLaporanMixerPipa.hasMany(models.ULaporanMixerPipa,{foreignKey: 'DLaporanMixerPipaId',as: 'uLaporan'})
+    DLaporanMixerPipa.hasMany(models.FLaporanMixerPipa,{foreignKey: 'DLaporanMixerPipaId',as: 'fLaporan'})
     DLaporanMixerPipa.belongsTo(models.HLaporanMixerPipa, {foreignKey: 'HLaporanMixerPipaId',as: 'hLaporan'})
   }
   return DLaporanMixerPipa;

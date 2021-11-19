@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.STRING
     },
-    idNota: {
+    kendaraan: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
@@ -42,21 +42,6 @@ module.exports = (sequelize, DataTypes) => {
     },
     idKernet: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      unique: true,
-    },
-    keterangan: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    penerima: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    foto: {
-      type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
@@ -83,7 +68,7 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'hlaporanarmada',
   });
   HLaporanArmada.associate = function(models){
-    HLaporanArmada.hasMany(models.DLaporanArmada,{as: 'dLaporanArmada'})
+    HLaporanArmada.hasMany(models.DLaporanArmada,{as: 'dLaporan'})
     HLaporanArmada.belongsTo(models.Karyawan, {foreignKey: 'idArmada',as: 'armada'})
     HLaporanArmada.belongsTo(models.Karyawan, {foreignKey: 'idStokist',as: 'stokist'})
     HLaporanArmada.belongsTo(models.Karyawan, {foreignKey: 'idSupir',as: 'supir'})

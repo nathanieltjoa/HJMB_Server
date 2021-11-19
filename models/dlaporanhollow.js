@@ -40,6 +40,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
+    panjang: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      unique: true,
+    },
     noCoil: {
       type: DataTypes.STRING,
       allowNull: false,

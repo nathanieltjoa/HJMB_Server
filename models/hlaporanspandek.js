@@ -20,6 +20,11 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       type: Sequelize.STRING
     },
+    shift:  {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
     idPelapor: {
       type: DataTypes.INTEGER,
       allowNull: false,

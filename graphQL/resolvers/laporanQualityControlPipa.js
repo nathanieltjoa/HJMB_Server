@@ -1,4 +1,5 @@
-const { HLaporanQualityControlPipa, DLaporanQualityControlPipa, Karyawan, Jabatan, PembagianAnggota,sequelize } = require('../../models');
+const { HLaporanQualityControlPipa, DLaporanQualityControlPipa, Karyawan, Jabatan, PembagianAnggota,
+    ULaporanQualityControl, sequelize } = require('../../models');
 const {Op} = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
@@ -147,7 +148,7 @@ module.exports={
                     cekProduksi = await DLaporanQualityControlPipa.count({
                         include: [{
                             model: HLaporanQualityControlPipa,
-                            as: 'hLaporanQC',
+                            as: 'hLaporan',
                             attributes: [],
                             where: {
                                 idPelapor: {[Op.eq]: element.idPelapor},
@@ -162,7 +163,7 @@ module.exports={
                     })
                     element.jumlahBanding = cekProduksi;
                     element.jumlahProduksi = element.dataValues.jumlahProduksi;
-                    element.tidakCapaiTarget = element.dataValues.totalReject;
+                    element.tidakCapaiTarget = element.dataValues.jumlahReject;
                 }))
                 return getKaryawan;
             }catch(err){
@@ -174,10 +175,6 @@ module.exports={
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 var laporans;
-                var laporanBaru = [];
-                var laporan = {};
-                var cekKaryawan;
-                var namaKaryawan;
                 page -= 1;
                 var offset = page ? page * limit: 0;
                 var jabatan = await Jabatan.findOne({
@@ -202,8 +199,12 @@ module.exports={
                         laporans = await DLaporanQualityControlPipa.findAndCountAll({
                             include: [{
                                 model: HLaporanQualityControlPipa,
-                                as: 'hLaporanQC',
-                                where: {idPelapor: {[Op.eq]: cekLaporan.idKaryawan}}
+                                as: 'hLaporan',
+                                where: {idPelapor: {[Op.eq]: cekLaporan.idKaryawan}},
+                                include:[{
+                                    model: Karyawan, 
+                                    as: 'karyawan'
+                                }]
                             }],
                             limit: limit,
                             offset: offset,
@@ -213,8 +214,12 @@ module.exports={
                         laporans = await DLaporanQualityControlPipa.findAndCountAll({
                             include: [{
                                 model: HLaporanQualityControlPipa,
-                                as: 'hLaporanQC',
-                                where: {idPelapor: {[Op.eq]: cekLaporan.idKaryawan}}
+                                as: 'hLaporan',
+                                where: {idPelapor: {[Op.eq]: cekLaporan.idKaryawan}},
+                                include:[{
+                                    model: Karyawan, 
+                                    as: 'karyawan'
+                                }]
                             }],
                             where: {status: {[Op.eq]: status}},
                             limit: limit,
@@ -222,57 +227,39 @@ module.exports={
                             order: [['createdAt','DESC'], ['jamLaporan','ASC']]
                         });
                     }
-                    laporan.count = laporans.count;
-                    await Promise.all(laporans.rows.map(async element =>
-                    { 
-                        counterHLaporan = await HLaporanQualityControlPipa.findOne({
-                            where: {id: {[Op.eq]: element.HLaporanQualityControlPipaId}}
-                        })
-                        namaKaryawan = "-";
-                        if(counterHLaporan.idKetua !== 0){
-                            cekKaryawan = await Karyawan.findOne({
-                                where: {id: {[Op.eq]: counterHLaporan.idKetua}}
-                            })
-                            namaKaryawan = cekKaryawan.nama;
-                        }
-                        element.namaPelapor = namaKaryawan;
-                        element.shift = counterHLaporan.shift;
-                        element.tipeMesin = counterHLaporan.tipeMesin
-                        laporanBaru.push(element);
-                    }))
                 }else if(jabatan.tingkatJabatan === 4){
                     if(status === 0){
                         laporans = await DLaporanQualityControlPipa.findAndCountAll({
+                            include: [{
+                                model: HLaporanQualityControlPipa,
+                                as: 'hLaporan',
+                                include:[{
+                                    model: Karyawan, 
+                                    as: 'karyawan'
+                                }]
+                            }],
                             limit: limit,
                             offset: offset,
                             order: [['createdAt','DESC'], ['jamLaporan','ASC']]
                         });
                     }else{
                         laporans = await DLaporanQualityControlPipa.findAndCountAll({
+                            include: [{
+                                model: HLaporanQualityControlPipa,
+                                as: 'hLaporan',
+                                include:[{
+                                    model: Karyawan, 
+                                    as: 'karyawan'
+                                }]
+                            }],
                             where: {status: {[Op.eq]: status}},
                             limit: limit,
                             offset: offset,
                             order: [['createdAt','DESC'], ['jamLaporan','ASC']]
                         });
                     }
-                    laporan.count = laporans.count;
-                    await Promise.all(laporans.rows.map(async (element) =>
-                    { 
-                        counterHLaporan = await HLaporanQualityControlPipa.findOne({
-                            where: {id: {[Op.eq]: element.HLaporanQualityControlPipaId}}
-                        })
-                        cekKaryawan = await Karyawan.findOne({
-                            where: {id: {[Op.eq]: counterHLaporan.idPelapor}}
-                        })
-                        namaKaryawan = cekKaryawan.nama;
-                        element.namaPelapor = namaKaryawan;
-                        element.shift = counterHLaporan.shift;
-                        element.tipeMesin = counterHLaporan.tipeMesin
-                        laporanBaru.push(element);
-                    }))
                 }
-                laporan.rows = laporanBaru;
-                return laporan;
+                return laporans;
             }catch(err){
                 throw err
             }
@@ -287,31 +274,27 @@ module.exports={
                 var offset = page ? page * limit: 0;
                 if(status === 0){
                     laporans = await HLaporanQualityControlPipa.findAndCountAll({
+                        include: [{
+                            model: Karyawan,
+                            as: 'karyawan'
+                        }],
                         limit: limit,
                         offset: offset,
                         order: [['createdAt','DESC']]
                     })
                 }else{
                     laporans = await HLaporanQualityControlPipa.findAndCountAll({
+                        include: [{
+                            model: Karyawan,
+                            as: 'karyawan'
+                        }],
                         limit: limit,
                         offset: offset,
                         where: {status: {[Op.eq]: status}},
                         order: [['createdAt','DESC']]
                     })
                 }
-                var laporan = {};
-                laporan.count = laporans.count;
-                await Promise.all(laporans.rows.map(async (element) =>
-                { 
-                    //Cek apakah divisi dari anggota yang request sudah sesuai apa belum
-                    cekKaryawan = await Karyawan.findOne({
-                        where: {id: {[Op.eq]: element.idPelapor}}
-                    })
-                    element.namaPelapor = cekKaryawan.nama;
-                    laporanBaru.push(element);
-                }))
-                laporan.rows = laporanBaru;
-                return laporan;
+                return laporans;
             }catch(err){
                 throw err
             }
@@ -321,11 +304,30 @@ module.exports={
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 var laporans = await DLaporanQualityControlPipa.findAll({
+                    include:[{
+                        model: ULaporanQualityControl,
+                        as: 'uLaporan'
+                    }],
                     where: {HLaporanQualityControlPipaId: {[Op.eq]: HLaporanQualityControlPipaId}},
-                    order: [['jamLaporan', 'ASC']]
+                    order: [['jamLaporan', 'ASC'], ['uLaporan','namaBagian','ASC']]
                 });
                 return laporans;
             }catch(err){
+                console.log(err)
+                throw err
+            }
+        },
+        getDetailLaporanQualityControlPipa: async (_,args,{user}) =>{
+            var {id} = args
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                var laporans = await ULaporanQualityControl.findAll({
+                    where: {DLaporanQualityControlPipaId: {[Op.eq]: id}},
+                    order: [['namaBagian', 'ASC']]
+                });
+                return laporans;
+            }catch(err){
+                console.log(err)
                 throw err
             }
         },
@@ -340,7 +342,7 @@ module.exports={
 
         //HRD
         tambahLaporanQualityControlPipa: async (_,args, {user})=>{
-            var {shift, tipeMesin, jamLaporan, file, keterangan, diameter, panjang, berat} = args;
+            var {shift, tipeMesin, jamLaporan, file, keterangan, diameter, panjang, berat, bagianKetebalan} = args;
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
@@ -360,6 +362,7 @@ module.exports={
                 var counterTgl = dayjs(new Date()).format('DDMMYYYY');
                 var id = "H" + counterTgl;
                 var idDLaporan = "D" + counterTgl;
+                var idULaporan = "U" + counterTgl;
                 console.log("Sebelum: ")
                 var jamLaporanKu = jamLaporan;
                 console.log("Sesudah: ");
@@ -445,9 +448,24 @@ module.exports={
 
                     const upload = await processUpload(file);
                 }
+                cekLaporan = await ULaporanQualityControl.count({
+                    where: {
+                        id: {[Op.startsWith]: idULaporan}
+                    }
+                })
+                var counterId = cekLaporan;
+                var counterIdULaporan;
+                await Promise.all(bagianKetebalan.map(async element => {
+                    counterId = counterId + 1;
+                    counterIdULaporan = idULaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
+                    await ULaporanQualityControl.create({
+                        id: counterIdULaporan, DLaporanQualityControlPipaId: idDLaporan, namaBagian: element.namaBahan, nilai: element.totalBahan
+                    },{transaction: t})
+                }));
                 await t.commit();
                 return laporan;
             }catch(err){
+                console.log(err)
                 await t.rollback();
                 throw err
             }
@@ -476,7 +494,8 @@ module.exports={
             }
         },
         updateDLaporanQualityControlPipa: async (_,args,{user})=>{
-            var {id, diameter, panjang, berat, keterangan} = args;
+            var {id, diameter, panjang, berat, keterangan, bagianKetebalan} = args;
+            const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 
@@ -494,12 +513,32 @@ module.exports={
                 if(cekLaporan === null){
                     throw new UserInputError('Error',  {errors: `Akun Anda Tidak Memiliki Hak Untuk Laporan Ini`} )
                 }
-
-                return await DLaporanQualityControlPipa.update({diameter: diameter, panjang: panjang
+                var laporan = await DLaporanQualityControlPipa.update({diameter: diameter, panjang: panjang
                     , berat: berat, keterangan: keterangan, status: 1},{
                     where: {id: {[Op.eq]: id}}
-                });
+                })
+
+                var counterId = id.replace('D','U').slice(0,9);
+                var cekLaporan = await ULaporanQualityControl.count({
+                    where: {
+                        id: {[Op.startsWith]: counterId}
+                    }
+                })
+                await Promise.all(bagianKetebalan.map( async element => {
+                    await ULaporanQualityControl.update({
+                        namaBagian: element.namaBahan,
+                        nilai: element.totalBahan,
+                    },{
+                        where: {id: {[Op.eq]: element.id}},
+                        transaction: t
+                    })
+                }))
+
+                t.commit()
+                return laporan;
             }catch(err){
+                console.log(err)
+                t.rollback()
                 throw err
             }
         },

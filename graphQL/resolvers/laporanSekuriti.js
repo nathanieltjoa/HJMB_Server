@@ -313,7 +313,8 @@ module.exports={
                         }
                     })
                     if(cekLaporan !== null){
-                        throw new UserInputError('Sudah Melakukan Absen Masuk Dinas',  {errors: `Sudah Melakukan Absen Masuk Dinas Tanggal ${tglLaporan}`} )
+                        var counterTglError = dayjs(counterTgl).format('DD-MM-YYYY');
+                        throw new UserInputError('Error',  {errors: `Sudah Melakukan Absen Masuk Dinas Tanggal ${counterTglError}`} )
                     }
                     cekLaporan = await DLaporanDinasSekuriti.count({
                         where: {
@@ -333,10 +334,12 @@ module.exports={
                         }
                     })
                     if(cekLaporan === null){
-                        throw new UserInputError('Belum Melakukan Absen Masuk Dinas',  {errors: `Belum Melakukan Absen Masuk Dinas Tanggal ${tglLaporan}`} )
+                        var counterTglError = dayjs(counterTgl).format('DD-MM-YYYY');
+                        throw new UserInputError('Error',  {errors: `Belum Melakukan Absen Masuk Dinas Tanggal ${counterTglError}`} )
                     }
                     if(cekLaporan.jamKeluar !== ""){
-                        throw new UserInputError('Sudah Melakukan Absen Keluar Dinas',  {errors: `Sudah Melakukan Absen Keluar Dinas Tanggal ${tglLaporan}`} )
+                        var counterTglError = dayjs(counterTgl).format('DD-MM-YYYY');
+                        throw new UserInputError('Error',  {errors: `Sudah Melakukan Absen Keluar Dinas Tanggal ${counterTglError}`} )
                     }
                     await DLaporanDinasSekuriti.update({
                         jamKeluar: dayjs(new Date()).format('HH:mm'),
@@ -373,7 +376,8 @@ module.exports={
                     }
                 })
                 if(cekLaporan === null){
-                    throw new UserInputError('Belum Absen Masuk Dinas',  {errors: `Belum Absen Masuk Dinas ${tglLaporan}`} )
+                    var counterTglError = dayjs(counterTgl).format('DD-MM-YYYY');
+                    throw new UserInputError('Error',  {errors: `Belum Absen Masuk Dinas ${counterTglError}`} )
                 }else{
                     id = cekLaporan.id;
                     cekAbsen = await DLaporanDinasSekuriti.findOne({
@@ -383,10 +387,12 @@ module.exports={
                         }
                     })
                     if(cekAbsen === null){
-                        throw new UserInputError('Belum Absen Masuk Dinas',  {errors: `Belum Absen Masuk Dinas ${tglLaporan}`} )
+                        var counterTglError = dayjs(counterTgl).format('DD-MM-YYYY');
+                        throw new UserInputError('Error',  {errors: `Belum Absen Masuk Dinas ${counterTglError}`} )
                     }
                     if(cekAbsen.jamKeluar !== ""){
-                        throw new UserInputError('Sudah Absen Keluar Dinas',  {errors: `Sudah Absen Keluar Dinas ${tglLaporan}`} )
+                        var counterTglError = dayjs(counterTgl).format('DD-MM-YYYY');
+                        throw new UserInputError('Error',  {errors: `Sudah Absen Keluar Dinas ${counterTglError}`} )
                     }
                 }
                 /*
@@ -436,7 +442,8 @@ module.exports={
                     }
                 })
                 if(cekLaporan === null){
-                    throw new UserInputError('Belum Absen Dinas',  {errors: `Belum Absen Dinas ${tglLaporan}`} )
+                    var counterTglError = dayjs(counterTgl).format('DD-MM-YYYY');
+                    throw new UserInputError('Error',  {errors: `Belum Absen Dinas ${counterTglError}`} )
                 }else{
                     id = cekLaporan.id;
                     cekAbsen = await DLaporanDinasSekuriti.findOne({
@@ -446,10 +453,12 @@ module.exports={
                         }
                     })
                     if(cekAbsen === null){
-                        throw new UserInputError('Belum Absen Dinas',  {errors: `Belum Absen Dinas ${tglLaporan}`} )
+                        var counterTglError = dayjs(counterTgl).format('DD-MM-YYYY');
+                        throw new UserInputError('Error',  {errors: `Belum Absen Dinas ${counterTglError}`} )
                     }
                     if(cekAbsen.jamKeluar !== ""){
-                        throw new UserInputError('Sudah Absen Keluar Dinas',  {errors: `Sudah Absen Keluar Dinas ${tglLaporan}`} )
+                        var counterTglError = dayjs(counterTgl).format('DD-MM-YYYY');
+                        throw new UserInputError('Error',  {errors: `Sudah Absen Keluar Dinas ${counterTglError}`} )
                     }
                 }
 
@@ -472,13 +481,13 @@ module.exports={
                     var namaFile = idDLaporan + ext;
 
                     const storeUpload = async ({ stream, filename, mimetype, encoding }) => {
-                        const pathName = path.join(__dirname, `../../public/laporan/Quality Control Pipa/${namaFile}`)
+                        const pathName = path.join(__dirname, `../../public/laporan/Sekuriti/${namaFile}`)
                     
                         return new Promise( (resolve, reject) =>
                             stream
                                 .pipe(fs.createWriteStream(pathName))
                                 .on("finish",async () => { 
-                                    var foto = `http://localhost:4000/laporan/Quality Control Pipa/${namaFile}`
+                                    var foto = `http://localhost:4000/laporan/Sekuriti/${namaFile}`
                                     laporan = await DLaporanMutasiSekuriti.create({
                                         id: idDLaporan, HLaporanSekuritiId: id, idPelapor, jamLaporan, uraian
                                         , foto, keterangan

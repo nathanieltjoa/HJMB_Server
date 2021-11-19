@@ -99,6 +99,8 @@ module.exports = (sequelize, DataTypes) => {
     Karyawan.hasMany(models.HLaporanQualityControlPipa,{foreignKey: 'idKetua', as: 'hQCPipaKetua'})
     Karyawan.hasMany(models.HLaporanStokistPipa,{foreignKey: 'idPelapor', as: 'hStokistPipaKaryawan'})
     Karyawan.hasMany(models.HLaporanStokistPipa,{foreignKey: 'idKetua', as: 'hStokistPipaKetua'})
+    Karyawan.hasMany(models.HLaporanStokRusak,{foreignKey: 'idPelapor', as: 'hLaporanStokRusakKaryawan'})
+    Karyawan.hasMany(models.HLaporanBarangRetur,{foreignKey: 'idPelapor', as: 'hLaporanBarangReturKaryawan'})
     Karyawan.hasMany(models.HLaporanArmada,{foreignKey: 'idArmada', as: 'hStokistPipaArmada'})
     Karyawan.hasMany(models.HLaporanArmada,{foreignKey: 'idStokist', as: 'hStokistPipaStokist'})
     Karyawan.hasMany(models.HLaporanArmada,{foreignKey: 'idSupir', as: 'hStokistPipaSupir'})

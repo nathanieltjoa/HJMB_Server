@@ -368,6 +368,7 @@ module.exports={
                         }
                         element.namaPelapor = namaKaryawan;
                         element.jenisProduk = counterHLaporan.jenisProduk;
+                        element.shift = counterHLaporan.shift;
                         laporanBaru.push(element);
                     }))
                     laporan.rows = laporanBaru;
@@ -406,6 +407,7 @@ module.exports={
                         namaKaryawan = cekKaryawan.nama;
                         element.namaPelapor = namaKaryawan;
                         element.jenisProduk = counterHLaporan.jenisProduk;
+                        element.shift = counterHLaporan.shift;
                         laporanBaru.push(element);
                     }))
                     laporan.rows = laporanBaru;
@@ -475,6 +477,7 @@ module.exports={
                             namaKaryawan = cekKaryawan.nama;
                         }
                         element.namaPelapor = namaKaryawan;
+                        element.shift = counterHLaporan.shift;
                         laporanBaru.push(element);
                     }))
                 }else if(jabatan.tingkatJabatan === 4){
@@ -503,6 +506,7 @@ module.exports={
                         })
                         namaKaryawan = cekKaryawan.nama;
                         element.namaPelapor = namaKaryawan;
+                        element.shift = counterHLaporan.shift;
                         laporanBaru.push(element);
                     }))
                 }
@@ -532,6 +536,18 @@ module.exports={
                         order: [['createdAt','DESC']]
                     })
                 }
+                var laporanBaru = [];
+                var cekKaryawan;
+                var laporan = {};
+                laporan.count = laporans.count;
+                await Promise.all(laporans.rows.map(async element =>{
+                    cekKaryawan = await Karyawan.findOne({
+                        where: {id: {[Op.eq]: element.idPelapor}}
+                    })
+                    element.namaPelapor = cekKaryawan.nama;
+                    laporanBaru.push(element);
+                }))
+                laporan.rows = laporanBaru;
                 return laporans;
             }catch(err){
                 throw err
@@ -603,7 +619,7 @@ module.exports={
 
         //HRD
         tambahLaporanSpandek: async (_,args, {user})=>{
-            var { jenisProduk, namaPemesan, warna, ukuran, berat, panjang, BS, noCoil, file, keterangan } = args;
+            var { jenisProduk, shift, namaPemesan, warna, ukuran, berat, gelombang, panjang, BS, noCoil, file, keterangan } = args;
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
@@ -619,7 +635,8 @@ module.exports={
                 var cekLaporan = await HLaporanSpandek.findOne({
                     where: { 
                         id: {[Op.startsWith]: id},
-                        jenisProduk: {[Op.eq]: jenisProduk}
+                        jenisProduk: {[Op.eq]: jenisProduk},
+                        shift: {[Op.eq]: shift}
                     }
                 })
                 if(cekLaporan !== null){
@@ -632,7 +649,7 @@ module.exports={
                     })
                     id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
                     await HLaporanSpandek.create({
-                        id, idPelapor, idKetua: 0, jenisProduk, totalPanjang: 0, totalBS: 0
+                        id, shift, idPelapor, idKetua: 0, jenisProduk, totalPanjang: 0, totalBS: 0
                         , totalBerat: 0
                     },{ transaction: t});
                 }
@@ -646,7 +663,7 @@ module.exports={
 
                 if(file === null){
                     laporan = await DLaporanSpandek.create({
-                        id: idDLaporan,HLaporanSpandekId: id, namaPemesan, warna, ukuran, berat, 
+                        id: idDLaporan,HLaporanSpandekId: id, namaPemesan, warna, ukuran, berat, gelombang,
                          panjang, BS, noCoil,keterangan, foto: '-', status, pernahBanding, 
                          keteranganBanding
                     },{transaction: t});
@@ -666,7 +683,7 @@ module.exports={
                                     var foto = `http://localhost:4000/laporan/Spandek/${namaFile}`
                                     laporan = await DLaporanSpandek.create({
                                         id: idDLaporan,HLaporanSpandekId: id, namaPemesan, warna, ukuran, berat, 
-                                        panjang, BS, noCoil,keterangan, foto, status, pernahBanding, 
+                                        gelombang, panjang, BS, noCoil,keterangan, foto, status, pernahBanding, 
                                         keteranganBanding
                                     },{transaction: t});
                                     resolve();
@@ -691,7 +708,7 @@ module.exports={
             }
         },
         tambahLaporanHollow: async (_,args, {user})=>{
-            var { ukuran, ketebalan, berat, noCoil, jumlah, BS, file, keterangan } = args;
+            var { shift, ukuran, ketebalan, berat, panjang, noCoil, jumlah, BS, file, keterangan } = args;
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
@@ -706,7 +723,8 @@ module.exports={
                 var pernahBanding = false;
                 var cekLaporan = await HLaporanHollow.findOne({
                     where: { 
-                        id: {[Op.eq]: id},
+                        id: {[Op.startsWith]: id},
+                        shift: {[Op.eq]: shift}
                     }
                 })
                 if(cekLaporan !== null){
@@ -719,7 +737,7 @@ module.exports={
                     })
                     id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
                     await HLaporanHollow.create({
-                        id, idPelapor, idKetua: 0, totalBerat: 0, totalJumlah : 0, totalBS : 0
+                        id, shift, idPelapor, idKetua: 0, totalBerat: 0, totalJumlah : 0, totalBS : 0
                     },{ transaction: t});
                 }
 
@@ -733,7 +751,7 @@ module.exports={
 
                 if(file === null){
                     laporan = await DLaporanHollow.create({
-                        id: idDLaporan,HLaporanHollowId: id, ukuran, ketebalan, berat, 
+                        id: idDLaporan,HLaporanHollowId: id, ukuran, ketebalan, berat, panjang,
                         noCoil, jumlah, BS, keterangan, foto: '-', status, pernahBanding, keteranganBanding
                     },{transaction: t});
                 }else{
@@ -751,7 +769,7 @@ module.exports={
                                 .on("finish",async () => { 
                                     var foto = `http://localhost:4000/laporan/Hollow/${namaFile}`
                                     laporan = await DLaporanHollow.create({
-                                        id: idDLaporan,HLaporanHollowId: id, ukuran, ketebalan, berat, 
+                                        id: idDLaporan,HLaporanHollowId: id, ukuran, ketebalan, berat, panjang, 
                                         noCoil, jumlah, BS, keterangan, foto, status, pernahBanding, keteranganBanding
                                     },{transaction: t});
                                     resolve();
@@ -776,7 +794,7 @@ module.exports={
             }
         },
         updateDLaporanSpandek: async (_,args,{user})=>{
-            var {id, namaPemesan, warna, ukuran, berat, panjang, BS, noCoil, keterangan} = args;
+            var {id, namaPemesan, warna, ukuran, berat, gelombang, panjang, BS, noCoil, keterangan} = args;
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 var laporans = await DLaporanSpandek.findOne({
@@ -794,7 +812,7 @@ module.exports={
                     throw new UserInputError('Error',  {errors: `Akun Anda Tidak Memiliki Hak Untuk Laporan Ini`} )
                 }
                 return await DLaporanSpandek.update({namaPemesan: namaPemesan, warna: warna
-                    , ukuran: ukuran, berat: berat, panjang: panjang, BS: BS, noCoil: noCoil,keterangan: keterangan, 
+                    , ukuran: ukuran, berat: berat, gelombang: gelombang, panjang: panjang, BS: BS, noCoil: noCoil,keterangan: keterangan, 
                     status: 1},{
                     where: {id: {[Op.eq]: id}}
                 });
@@ -803,7 +821,7 @@ module.exports={
             }
         },
         updateDLaporanHollow: async (_,args,{user})=>{
-            var {id, ukuran, ketebalan, berat, noCoil, jumlah, BS, keterangan} = args;
+            var {id, ukuran, ketebalan, berat, panjang, noCoil, jumlah, BS, keterangan} = args;
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 var laporans = await DLaporanHollow.findOne({
@@ -820,7 +838,7 @@ module.exports={
                 if(cekLaporan === null){
                     throw new UserInputError('Error',  {errors: `Akun Anda Tidak Memiliki Hak Untuk Laporan Ini`} )
                 }
-                return await DLaporanHollow.update({ukuran: ukuran, ketebalan: ketebalan, berat: berat
+                return await DLaporanHollow.update({ukuran: ukuran, ketebalan: ketebalan, berat: berat, panjang: panjang
                     , noCoil: noCoil, jumlah: jumlah, BS: BS,keterangan: keterangan, status: 1},{
                     where: {id: {[Op.eq]: id}}
                 });

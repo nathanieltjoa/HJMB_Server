@@ -1,5 +1,6 @@
 const {HLaporanStokistPipa, DLaporanStokistPipa, HLaporanKetuaStokistPipa, DLaporanKetuaStokistPipa, 
-    LaporanStok, LaporanKeluarMasukPipa, Karyawan, Jabatan, PembagianAnggota,sequelize } = require('../../models');
+    LaporanStok, LaporanKeluarMasukPipa, Karyawan, Jabatan, PembagianAnggota,
+    HLaporanStokRusak, DLaporanStokRusak, HLaporanBarangRetur, DLaporanBarangRetur, sequelize } = require('../../models');
 const {Op} = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
@@ -309,6 +310,80 @@ module.exports={
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 return await LaporanStok.findAll({
                     where: {status: {[Op.eq]: 0}}
+                });
+            }catch(err){
+                throw err
+            }
+        },
+        getLaporanRetur: async (_,args,{user}) =>{
+            var {page, limit} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                page -= 1;
+                var offset = page ? page * limit: 0;
+                var laporans = await HLaporanBarangRetur.findAndCountAll({
+                    include:[{
+                        model: Karyawan,
+                        as: 'karyawan'
+                    }],
+                    limit: limit
+                    ,offset: offset
+                    ,order: [['createdAt','DESC']]
+                });
+                return laporans;
+            }catch(err){
+                throw err
+            }
+        },
+        getLaporanRusak: async (_,args,{user}) =>{
+            var {page, limit} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                page -= 1;
+                var offset = page ? page * limit: 0;
+                var laporans = await HLaporanStokRusak.findAndCountAll({
+                    include:[{
+                        model: Karyawan,
+                        as: 'karyawan'
+                    }],
+                    limit: limit
+                    ,offset: offset
+                    ,order: [['createdAt','DESC']]
+                });
+                return laporans;
+            }catch(err){
+                throw err
+            }
+        },
+        getDLaporanRetur: async (_,args,{user}) =>{
+            var {id} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                return await DLaporanBarangRetur.findAll({
+                    where: {
+                        HLaporanBarangReturId: {[Op.eq]: id},
+                    },
+                    include: [{
+                        model: LaporanStok,
+                        as: 'barang',
+                    }],
+                });
+            }catch(err){
+                throw err
+            }
+        },
+        getDLaporanRusak: async (_,args,{user}) =>{
+            var {id} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                return await DLaporanStokRusak.findAll({
+                    where: {
+                        HLaporanStokRusakId: {[Op.eq]: id},
+                    },
+                    include: [{
+                        model: LaporanStok,
+                        as: 'barang',
+                    }],
                 });
             }catch(err){
                 throw err
@@ -730,6 +805,382 @@ module.exports={
                 t.commit();
                 return laporan;
             }catch(err){
+                t.rollback();
+                throw err
+            }
+        },
+        tambahLaporanReturBarang: async (_,args, {user})=>{
+            var {idNota, stokistPipa, file, keterangan} = args;
+            const t = await sequelize.transaction();
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                var pad = "000"
+
+
+                var tgl = new Date();
+                var tglLaporan = dayjs(tgl).format('DDMMYYYY');
+                var id = "H" + tglLaporan;
+                var idDLaporan = "D" + tglLaporan;
+                var idLaporanKMPipa = idDLaporan.replace('D', 'L');
+                var baseId = idLaporanKMPipa;
+                var laporan = null;
+
+                
+                var cekLaporan = await HLaporanBarangRetur.findOne({
+                    where: {
+                        idNota: {[Op.eq]: idNota}
+                    }
+                })
+                if(cekLaporan !== null){
+                    throw new UserInputError('Error',  {errors: `Sudah Ada Laporan Retur Untuk Nota ${idNota}`} )
+                }
+                
+                cekLaporan = await HLaporanBarangRetur.count({
+                    where: {
+                        id: {[Op.startsWith]: id}
+                    }
+                })
+                id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
+
+                cekLaporan = await LaporanKeluarMasukPipa.count({
+                    where: {id: {[Op.startsWith]: idLaporanKMPipa}}
+                })
+                var counterKMP = cekLaporan;
+
+                if(file === null){
+                    const hLaporan = await HLaporanBarangRetur.create({
+                        id, idPelapor: user.userJWT.id, idNota, foto: '-', keterangan
+                    },{ transaction: t});
+                    cekLaporan = await DLaporanBarangRetur.count({
+                        where: {
+                            id: {[Op.startsWith]: idDLaporan}
+                        }
+                    })
+                    var counterId = cekLaporan;
+                    var counterIdDLaporan;
+                    await Promise.all(stokistPipa.map(async element => {
+                        cekLaporan = await LaporanStok.findOne({
+                            where: {
+                                jenisBarang: {[Op.eq]: "Pipa"},
+                                merkBarang: {[Op.eq]: element.merkPipa},
+                                tipeBarang: {[Op.eq]: element.jenisPipa},
+                                ukuranBarang: {[Op.eq]: element.ukuranPipa},
+                            }
+                        })
+                        if(cekLaporan === null){
+                            throw new UserInputError('Error',  {errors: `Barang Belum Terdaftar Di Gudang`} )
+                        }
+                        var stokId = cekLaporan.id;
+                        await LaporanStok.update({
+                            jumlahBarang: cekLaporan.jumlahBarang + element.jumlahPipa
+                        },{
+                            where: {id: {[Op.eq]: stokId}},
+                            transaction: t
+                        })
+                        counterId = counterId + 1;
+                        counterIdDLaporan = idDLaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
+                        await DLaporanBarangRetur.create({
+                            id: counterIdDLaporan, HLaporanBarangReturId: id, LaporanStokId: stokId 
+                            ,jumlah: element.jumlahPipa
+                        },{transaction: t})
+                    }));
+                    await Promise.all(stokistPipa.map(async element => {
+                        cekLaporan = await LaporanStok.findOne({
+                            where: {
+                                jenisBarang: {[Op.eq]: "Pipa"},
+                                merkBarang: {[Op.eq]: element.merkPipa},
+                                tipeBarang: {[Op.eq]: element.jenisPipa},
+                                ukuranBarang: {[Op.eq]: element.ukuranPipa},
+                            }
+                        })
+                        var stokId = cekLaporan.id;
+                        counterKMP+= 1;
+                        idLaporanKMPipa = baseId + pad.substring(0, pad.length - counterKMP.toString().length) + counterKMP.toString();
+                        await LaporanKeluarMasukPipa.create({
+                            id: idLaporanKMPipa, LaporanStokId: stokId, terimaLaporan: "Retur Nota "+idNota,
+                            jenisLaporan: 'masuk', jumlahLaporan: element.jumlahPipa
+                        },{transaction: t})
+                    }));
+                }else{
+                    const { createReadStream, filename, mimetype, encoding } = await file;
+
+                    const { ext } = path.parse(filename);
+                    var namaFile = id + ext;
+
+                    const storeUpload = async ({ stream, filename, mimetype, encoding }) => {
+                        const pathName = path.join(__dirname, `../../public/laporan/Stokist Pipa/${namaFile}`)
+                    
+                        return new Promise( (resolve, reject) =>
+                            stream
+                                .pipe(fs.createWriteStream(pathName))
+                                .on("finish",async () => {
+                                    var foto = `http://localhost:4000/laporan/Stokist Pipa/${namaFile}`
+                                    const hLaporan = await HLaporanBarangRetur.create({
+                                        id, idPelapor: user.userJWT.id, idNota, foto, keterangan
+                                    },{ transaction: t});
+                                    cekLaporan = await DLaporanBarangRetur.count({
+                                        where: {
+                                            id: {[Op.startsWith]: idDLaporan}
+                                        }
+                                    })
+                                    var counterId = cekLaporan;
+                                    var counterIdDLaporan;
+                                    await Promise.all(stokistPipa.map(async element => {
+                                        cekLaporan = await LaporanStok.findOne({
+                                            where: {
+                                                jenisBarang: {[Op.eq]: "Pipa"},
+                                                merkBarang: {[Op.eq]: element.merkPipa},
+                                                tipeBarang: {[Op.eq]: element.jenisPipa},
+                                                ukuranBarang: {[Op.eq]: element.ukuranPipa},
+                                            }
+                                        })
+                                        if(cekLaporan === null){
+                                            throw new UserInputError('Error',  {errors: `Barang Belum Terdaftar Di Gudang`} )
+                                        }
+                                        var stokId = cekLaporan.id;
+                                        await LaporanStok.update({
+                                            jumlahBarang: cekLaporan.jumlahBarang + element.jumlahPipa
+                                        },{
+                                            where: {id: {[Op.eq]: stokId}},
+                                            transaction: t
+                                        })
+                                        counterId = counterId + 1;
+                                        counterIdDLaporan = idDLaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
+                                        await DLaporanBarangRetur.create({
+                                            id: counterIdDLaporan, HLaporanBarangReturId: id, LaporanStokId: stokId
+                                            ,jumlah: element.jumlahPipa
+                                        },{transaction: t})
+                                    }));
+                                    await Promise.all(stokistPipa.map(async element => {
+                                        cekLaporan = await LaporanStok.findOne({
+                                            where: {
+                                                jenisBarang: {[Op.eq]: "Pipa"},
+                                                merkBarang: {[Op.eq]: element.merkPipa},
+                                                tipeBarang: {[Op.eq]: element.jenisPipa},
+                                                ukuranBarang: {[Op.eq]: element.ukuranPipa},
+                                            }
+                                        })
+                                        var stokId = cekLaporan.id;
+                                        counterKMP+= 1;
+                                        idLaporanKMPipa = baseId + pad.substring(0, pad.length - counterKMP.toString().length) + counterKMP.toString();
+                                        await LaporanKeluarMasukPipa.create({
+                                            id: idLaporanKMPipa, LaporanStokId: stokId, terimaLaporan: "Retur Nota "+idNota,
+                                            jenisLaporan: 'masuk', jumlahLaporan: element.jumlahPipa
+                                        },{transaction: t})
+                                    }));
+                                    resolve();
+                                })
+                                .on("error", reject)
+                        );
+                    };
+
+                    const processUpload = async (upload) => {
+                        const { createReadStream, filename, mimetype, encoding } = await upload;
+                        const stream = createReadStream();
+                        const file = await storeUpload({ stream, filename, mimetype, encoding });
+                    };
+
+                    const upload = await processUpload(file);
+                }
+                t.commit();
+                return laporan;
+            }catch(err){
+                console.log(err);
+                t.rollback();
+                throw err
+            }
+        },
+        tambahLaporanStokRusak: async (_,args, {user})=>{
+            var { stokistPipa, file, keterangan} = args;
+            const t = await sequelize.transaction();
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                var pad = "000"
+
+
+                var tgl = new Date();
+                var tglLaporan = dayjs(tgl).format('DDMMYYYY');
+                var id = "H" + tglLaporan;
+                var idDLaporan = "D" + tglLaporan;
+                var idLaporanKMPipa = idDLaporan.replace('D', 'L');
+                var baseId = idLaporanKMPipa;
+                var laporan = null;
+                var errorStok = false;
+                var errorJumlah = false;
+                
+                var cekLaporan = await HLaporanStokRusak.count({
+                    where: {
+                        id: {[Op.startsWith]: id}
+                    }
+                })
+                id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
+
+                
+                cekLaporan = await LaporanKeluarMasukPipa.count({
+                    where: {id: {[Op.startsWith]: idLaporanKMPipa}}
+                })
+                var counterKMP = cekLaporan;
+
+                if(file === null){
+                    const hLaporan = await HLaporanStokRusak.create({
+                        id, idPelapor: user.userJWT.id, foto: '-', keterangan
+                    },{ transaction: t});
+                    cekLaporan = await DLaporanStokRusak.count({
+                        where: {
+                            id: {[Op.startsWith]: idDLaporan}
+                        }
+                    })
+                    var counterId = cekLaporan;
+                    var counterIdDLaporan;
+                    await Promise.all(stokistPipa.map(async element => {
+                        cekLaporan = await LaporanStok.findOne({
+                            where: {
+                                jenisBarang: {[Op.eq]: "Pipa"},
+                                merkBarang: {[Op.eq]: element.merkPipa},
+                                tipeBarang: {[Op.eq]: element.jenisPipa},
+                                ukuranBarang: {[Op.eq]: element.ukuranPipa},
+                            }
+                        })
+                        if(cekLaporan === null){
+                            throw new UserInputError('Error',  {errors: `Barang Belum Terdaftar Di Gudang`} )
+                        }
+                        var jumlahPipa = cekLaporan.jumlahBarang - element.jumlahPipa;
+                        if(jumlahPipa < 0){
+                            throw new UserInputError('Error',  {errors: `Stok Pipa Di Gudang Kurang`} )
+                        }
+                        var stokId = cekLaporan.id;
+                        await LaporanStok.update({
+                            jumlahBarang: jumlahPipa
+                        },{
+                            where: {id: {[Op.eq]: cekLaporan.id}},
+                            transaction: t
+                        })
+
+                        counterId = counterId + 1;
+                        counterIdDLaporan = idDLaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
+                        await DLaporanStokRusak.create({
+                            id: counterIdDLaporan, HLaporanStokRusakId: id, LaporanStokId: stokId 
+                            ,jumlah: element.jumlahPipa
+                        },{transaction: t})
+                    }));
+                    await Promise.all(stokistPipa.map(async element => {
+                        cekLaporan = await LaporanStok.findOne({
+                            where: {
+                                jenisBarang: {[Op.eq]: "Pipa"},
+                                merkBarang: {[Op.eq]: element.merkPipa},
+                                tipeBarang: {[Op.eq]: element.jenisPipa},
+                                ukuranBarang: {[Op.eq]: element.ukuranPipa},
+                            }
+                        })
+                        
+                        var stokId = cekLaporan.id;
+                        counterKMP += 1;
+                        idLaporanKMPipa = baseId + pad.substring(0, pad.length - counterKMP.toString().length) + counterKMP.toString();
+                        console.log(idLaporanKMPipa);
+                        await LaporanKeluarMasukPipa.create({
+                            id: idLaporanKMPipa, LaporanStokId: stokId, terimaLaporan: keterangan,
+                            jenisLaporan: 'keluar', jumlahLaporan: element.jumlahPipa
+                        },{transaction: t})
+                    }));
+                }else{
+                    const { createReadStream, filename, mimetype, encoding } = await file;
+
+                    const { ext } = path.parse(filename);
+                    var namaFile = id + ext;
+
+                    const storeUpload = async ({ stream, filename, mimetype, encoding }) => {
+                        const pathName = path.join(__dirname, `../../public/laporan/Stokist Pipa/${namaFile}`)
+                    
+                        return new Promise( (resolve, reject) =>
+                            stream
+                                .pipe(fs.createWriteStream(pathName))
+                                .on("finish",async () => {
+                                    var foto = `http://localhost:4000/laporan/Stokist Pipa/${namaFile}`
+                                    const hLaporan = await HLaporanStokRusak.create({
+                                        id, idPelapor: user.userJWT.id, foto, keterangan
+                                    },{ transaction: t});
+                                    cekLaporan = await DLaporanStokRusak.count({
+                                        where: {
+                                            id: {[Op.startsWith]: idDLaporan}
+                                        }
+                                    })
+                                    var counterId = cekLaporan;
+                                    var counterIdDLaporan;
+                                    await Promise.all(stokistPipa.map(async element => {
+                                        cekLaporan = await LaporanStok.findOne({
+                                            where: {
+                                                jenisBarang: {[Op.eq]: "Pipa"},
+                                                merkBarang: {[Op.eq]: element.merkPipa},
+                                                tipeBarang: {[Op.eq]: element.jenisPipa},
+                                                ukuranBarang: {[Op.eq]: element.ukuranPipa},
+                                            }
+                                        })
+                                        if(cekLaporan === null){
+                                            errorStok = true;
+                                            resolve()
+                                        }
+                                        var jumlahPipa = cekLaporan.jumlahBarang - element.jumlahPipa;
+                                        if(jumlahPipa < 0){
+                                            errorJumlah = true;
+                                            resolve()
+                                        }
+                                        var stokId = cekLaporan.id;
+                                        await LaporanStok.update({
+                                            jumlahBarang: jumlahPipa
+                                        },{
+                                            where: {id: {[Op.eq]: cekLaporan.id}},
+                                            transaction: t
+                                        })
+
+                                        counterId = counterId + 1;
+                                        counterIdDLaporan = idDLaporan + pad.substring(0, pad.length - counterId.toString().length) + counterId.toString();
+                                        await DLaporanStokRusak.create({
+                                            id: counterIdDLaporan, HLaporanStokRusakId: id, LaporanStokId: stokId
+                                            ,jumlah: element.jumlahPipa
+                                        },{transaction: t})
+                                    }));
+                                    await Promise.all(stokistPipa.map(async element => {
+                                        cekLaporan = await LaporanStok.findOne({
+                                            where: {
+                                                jenisBarang: {[Op.eq]: "Pipa"},
+                                                merkBarang: {[Op.eq]: element.merkPipa},
+                                                tipeBarang: {[Op.eq]: element.jenisPipa},
+                                                ukuranBarang: {[Op.eq]: element.ukuranPipa},
+                                            }
+                                        })
+                                        
+                                        var stokId = cekLaporan.id;
+                                        counterKMP += 1;
+                                        idLaporanKMPipa = baseId + pad.substring(0, pad.length - counterKMP.toString().length) + counterKMP.toString();
+                                        console.log("ID: "+idLaporanKMPipa);
+                                        await LaporanKeluarMasukPipa.create({
+                                            id: idLaporanKMPipa, LaporanStokId: stokId, terimaLaporan: keterangan,
+                                            jenisLaporan: 'keluar', jumlahLaporan: element.jumlahPipa
+                                        },{transaction: t})
+                                    }));
+                                    resolve();
+                                })
+                                .on("error", reject)
+                        );
+                    };
+
+                    const processUpload = async (upload) => {
+                        const { createReadStream, filename, mimetype, encoding } = await upload;
+                        const stream = createReadStream();
+                        const file = await storeUpload({ stream, filename, mimetype, encoding });
+                    };
+
+                    const upload = await processUpload(file);
+                }
+                if(errorStok){
+                    throw new UserInputError('Error',  {errors: `Barang Belum Terdaftar Di Gudang`} )
+                }else if(errorJumlah){
+                    throw new UserInputError('Error',  {errors: `Stok Pipa Di Gudang Kurang`} )
+                }
+                t.commit();
+                return laporan;
+            }catch(err){
+                console.log(err);
                 t.rollback();
                 throw err
             }
