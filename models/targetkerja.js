@@ -40,6 +40,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
+    keteranganTarget: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
     updatedBy: {
       type: DataTypes.INTEGER,
       allowNull: true,

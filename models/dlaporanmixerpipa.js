@@ -35,6 +35,26 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
+    formulaA: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: true,
+    },
+    formulaB: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: true,
+    },
+    formulaC: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: true,
+    },
+    crusher: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: true,
+    },
     keterangan: {
       type: DataTypes.STRING,
       allowNull: false,

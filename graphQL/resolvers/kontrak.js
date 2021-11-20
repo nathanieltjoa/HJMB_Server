@@ -358,6 +358,7 @@ module.exports={
                 })
                 return indexGaji;
             }catch(err){
+                console.log(err);
                 throw new UserInputError('Bad Input',{errors})
             }
         },
@@ -372,6 +373,7 @@ module.exports={
                 })
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -386,6 +388,7 @@ module.exports={
                 })
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -405,6 +408,7 @@ module.exports={
                 })
                 return indexIuran;
             }catch(err){
+                console.log(err);
                 throw new UserInputError('Bad Input',{errors})
             }
         },
@@ -419,6 +423,7 @@ module.exports={
                 })
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -433,6 +438,7 @@ module.exports={
                 })
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -511,6 +517,7 @@ module.exports={
                 t.commit()
                 return laporan;
             }catch(err){
+                console.log(err);
                 t.rollback()
                 throw err;
             }
@@ -529,6 +536,7 @@ module.exports={
                     });
                 }
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -542,6 +550,7 @@ module.exports={
                     });
                 }
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -700,6 +709,7 @@ module.exports={
                 t.commit()
                 return hLaporan;
             }catch(err){
+                console.log(err);
                 t.rollback()
                 throw err
             }
@@ -728,6 +738,7 @@ module.exports={
                     });
                 }
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -750,6 +761,7 @@ module.exports={
                     where: {id: {[Op.eq]: id}}
                 });
             }catch(err){
+                console.log(err);
                 throw err
             }
         },

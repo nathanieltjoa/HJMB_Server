@@ -63,22 +63,28 @@ module.exports={
                     var cekLaporan = await PembagianAnggota.findOne({
                         where: {idKaryawan: {[Op.eq]: karyawan}}
                     })
-                    var cekKaryawan = await Karyawan.findOne({
-                        where: {id: {[Op.eq]: karyawan}}
-                    })
-                    cekLaporan = await PembagianAnggota.findOne({
-                        include: [{
-                            model: Karyawan,
-                            as: 'karyawan',
-                            where: {JabatanId: {[Op.eq]: cekKaryawan.JabatanId}}
-                        }],
-                        where: {
-                            groupKaryawan: {[Op.eq]: cekLaporan.groupKaryawan},
-                            ketua: {[Op.eq]: true}
+                    if(cekLaporan !== null){
+                        var cekKaryawan = await Karyawan.findOne({
+                            where: {id: {[Op.eq]: karyawan}}
+                        })
+                        cekLaporan = await PembagianAnggota.findOne({
+                            include: [{
+                                model: Karyawan,
+                                as: 'karyawan',
+                                where: {JabatanId: {[Op.eq]: cekKaryawan.JabatanId}}
+                            }],
+                            where: {
+                                groupKaryawan: {[Op.eq]: cekLaporan.groupKaryawan},
+                                ketua: {[Op.eq]: true}
+                            }
+                        })
+                        whereHKu={
+                            idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
                         }
-                    })
-                    whereHKu={
-                        idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
+                    }else{
+                        whereHKu={
+                            idPelapor: {[Op.eq]: karyawan}
+                        }
                     }
                 }
                 laporans = await HLaporanProduksiPipa.findAndCountAll({
@@ -104,6 +110,7 @@ module.exports={
                 });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -173,6 +180,7 @@ module.exports={
                 }))
                 return getKaryawan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -190,17 +198,21 @@ module.exports={
                     var cekLaporan = await PembagianAnggota.findOne({
                         where: {idKaryawan: {[Op.eq]: user.userJWT.id}}
                     })
-                    cekLaporan = await PembagianAnggota.findOne({
-                        include: [{
-                            model: Karyawan,
-                            as: 'karyawan',
-                            where: {JabatanId: {[Op.eq]: user.userJWT.idJabatan}}
-                        }],
-                        where: {
-                            groupKaryawan: {[Op.eq]: cekLaporan.groupKaryawan},
-                            ketua: {[Op.eq]: true}
-                        }
-                    })
+                    if(cekLaporan !== null){
+                        cekLaporan = await PembagianAnggota.findOne({
+                            include: [{
+                                model: Karyawan,
+                                as: 'karyawan',
+                                where: {JabatanId: {[Op.eq]: user.userJWT.idJabatan}}
+                            }],
+                            where: {
+                                groupKaryawan: {[Op.eq]: cekLaporan.groupKaryawan},
+                                ketua: {[Op.eq]: true}
+                            }
+                        })
+                    }else{
+                        cekLaporan.idKaryawan = user.userJWT.id;
+                    }
                     if(status === 0){
                         laporans = await DLaporanProduksiPipa.findAndCountAll({
                             include: [{
@@ -267,6 +279,7 @@ module.exports={
                 }
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -281,6 +294,7 @@ module.exports={
                 })
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -316,6 +330,7 @@ module.exports={
                 }
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -333,6 +348,7 @@ module.exports={
                 });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -343,11 +359,13 @@ module.exports={
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
-                console.log('masuk');
                 //cek dia Ketua
                 var cekLaporan = await PembagianAnggota.findOne({
                     where: {idKaryawan: {[Op.eq]: user.userJWT.id}}
                 })
+                if(cekLaporan === null){
+                    throw new UserInputError('Error',  {errors: `Belum Ada Pembagian Anggota`} )
+                }
 
                 if(cekLaporan.ketua === false){
                     throw new UserInputError('Error',  {errors: `Akun Anda Tidak Memiliki Hak Untuk Buat Laporan`} )
@@ -361,8 +379,6 @@ module.exports={
                 var idDLaporan = "D" + counterTgl;
                 var idULaporan = "U" + counterTgl;
                 var jamLaporanKu = jamLaporan;
-                console.log("Sesudah: ");
-                console.log(jamLaporanKu);
                 var status = 1;
                 var keteranganBanding = "";
                 var laporan = null;
@@ -466,6 +482,7 @@ module.exports={
                 await t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 await t.rollback();
                 throw err
             }
@@ -532,6 +549,7 @@ module.exports={
                 t.commit()
                 return laporans;
             }catch(err){
+                console.log(err);
                 t.rollback()
                 throw err
             }
@@ -558,6 +576,7 @@ module.exports={
                 });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         }

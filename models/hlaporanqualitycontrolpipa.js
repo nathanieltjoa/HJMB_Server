@@ -25,7 +25,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
-    tipeMesin:  {
+    merkPipa:  {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    ukuranPipa:  {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
@@ -37,11 +42,6 @@ module.exports = (sequelize, DataTypes) => {
     },
     idKetua:  {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      unique: true,
-    },
-    merk:  {
-      type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },

@@ -62,23 +62,29 @@ module.exports={
                     var cekLaporan = await PembagianAnggota.findOne({
                         where: {idKaryawan: {[Op.eq]: karyawan}}
                     })
-                    var cekKaryawan = await Karyawan.findOne({
-                        where: {id: {[Op.eq]: karyawan}}
-                    })
-                    cekLaporan = await PembagianAnggota.findOne({
-                        include: [{
-                            model: Karyawan,
-                            as: 'karyawan',
-                            where: {JabatanId: {[Op.eq]: cekKaryawan.JabatanId}}
-                        }],
-                        where: {
-                            groupKaryawan: {[Op.eq]: cekLaporan.groupKaryawan},
-                            ketua: {[Op.eq]: true}
+                    if(cekLaporan !== null){
+                        var cekKaryawan = await Karyawan.findOne({
+                            where: {id: {[Op.eq]: karyawan}}
+                        })
+                        cekLaporan = await PembagianAnggota.findOne({
+                            include: [{
+                                model: Karyawan,
+                                as: 'karyawan',
+                                where: {JabatanId: {[Op.eq]: cekKaryawan.JabatanId}}
+                            }],
+                            where: {
+                                groupKaryawan: {[Op.eq]: cekLaporan.groupKaryawan},
+                                ketua: {[Op.eq]: true}
+                            }
+                        })
+    
+                        whereHKu={
+                            idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
                         }
-                    })
-
-                    whereHKu={
-                        idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
+                    }else{
+                        whereHKu={
+                            idPelapor: {[Op.eq]: karyawan}
+                        }
                     }
                 }
                 laporans = await DLaporanSpandek.findAndCountAll({
@@ -104,6 +110,7 @@ module.exports={
                 });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -155,23 +162,29 @@ module.exports={
                     var cekLaporan = await PembagianAnggota.findOne({
                         where: {idKaryawan: {[Op.eq]: karyawan}}
                     })
-                    var cekKaryawan = await Karyawan.findOne({
-                        where: {id: {[Op.eq]: karyawan}}
-                    })
-                    cekLaporan = await PembagianAnggota.findOne({
-                        include: [{
-                            model: Karyawan,
-                            as: 'karyawan',
-                            where: {JabatanId: {[Op.eq]: cekKaryawan.JabatanId}}
-                        }],
-                        where: {
-                            groupKaryawan: {[Op.eq]: cekLaporan.groupKaryawan},
-                            ketua: {[Op.eq]: true}
+                    if(cekLaporan !== null){
+                        var cekKaryawan = await Karyawan.findOne({
+                            where: {id: {[Op.eq]: karyawan}}
+                        })
+                        cekLaporan = await PembagianAnggota.findOne({
+                            include: [{
+                                model: Karyawan,
+                                as: 'karyawan',
+                                where: {JabatanId: {[Op.eq]: cekKaryawan.JabatanId}}
+                            }],
+                            where: {
+                                groupKaryawan: {[Op.eq]: cekLaporan.groupKaryawan},
+                                ketua: {[Op.eq]: true}
+                            }
+                        })
+    
+                        whereHKu={
+                            idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
                         }
-                    })
-
-                    whereHKu={
-                        idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
+                    }else{
+                        whereHKu={
+                            idPelapor: {[Op.eq]: karyawan}
+                        }
                     }
                 }
                 laporans = await DLaporanHollow.findAndCountAll({
@@ -197,6 +210,7 @@ module.exports={
                 });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -243,6 +257,7 @@ module.exports={
                 }))
                 return getKaryawan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -297,6 +312,7 @@ module.exports={
                 }))
                 return getKaryawan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -414,6 +430,7 @@ module.exports={
                 }
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -513,6 +530,8 @@ module.exports={
                 laporan.rows = laporanBaru;
                 return laporan;
             }catch(err){
+                console.log(err);
+                throw err;
             }
         },
         getHLaporansSpandek: async (_,args,{user}) =>{
@@ -550,6 +569,7 @@ module.exports={
                 laporan.rows = laporanBaru;
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -592,6 +612,7 @@ module.exports={
                 });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -605,6 +626,7 @@ module.exports={
                 });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -703,6 +725,7 @@ module.exports={
                 await t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 await t.rollback();
                 throw err
             }
@@ -789,6 +812,7 @@ module.exports={
                 await t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 await t.rollback();
                 throw err
             }
@@ -817,6 +841,7 @@ module.exports={
                     where: {id: {[Op.eq]: id}}
                 });
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -843,6 +868,7 @@ module.exports={
                     where: {id: {[Op.eq]: id}}
                 });
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -888,6 +914,7 @@ module.exports={
                 }
                 t.commit()
             }catch(err){
+                console.log(err);
                 t.rollback()
                 throw err
             }
@@ -936,6 +963,7 @@ module.exports={
                 t.commit()
                 return laporan;
             }catch(err){
+                console.log(err);
                 t.rollback()
                 throw err
             }

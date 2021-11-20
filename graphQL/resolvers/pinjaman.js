@@ -215,6 +215,7 @@ module.exports={
               t.commit()
               return indexPenilaian;
           }catch(err){
+            console.log(err);
               t.rollback()
               throw err
           }
@@ -233,6 +234,7 @@ module.exports={
             })
             return laporan;
         }catch(err){
+            console.log(err);
             throw err
         }
       },
@@ -249,6 +251,7 @@ module.exports={
             })
             return laporan;
         }catch(err){
+            console.log(err);
             throw err
         }
       },
@@ -264,6 +267,7 @@ module.exports={
             })
             return laporan;
         }catch(err){
+            console.log(err);
             throw err
         }
       },

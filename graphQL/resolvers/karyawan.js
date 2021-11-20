@@ -532,7 +532,6 @@ module.exports={
                     const upload = await processUpload(file);
                 }
                 
-                console.log("asd");
                 const karyawans = await Karyawan.create({
                     id: id, nama, nik, noTelp, tanggalMasuk, tempatLahir, tanggalLahir, alamat, agama, pendidikan, foto, JabatanId : idJabatan
                 },{transaction: t})
@@ -639,6 +638,33 @@ module.exports={
             }catch(err){
                 t.rollback()
                 throw err
+            }
+        },
+        resetPassword: async (_,args, {user})=>{
+            var {id} = args;
+            var errors = {}
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                //generate username
+                if(id.toString().trim() === '') errors.id = 'ID tidak boleh kosong'
+                
+                var cekKaryawan = await Karyawan.findOne({
+                    where: {id: {[Op.eq]: id}}
+                })
+                var username = cekKaryawan.nama.split(' ')[0].toLowerCase();
+                var passwordRaw = username + (Math.floor(Math.random() * 100) + 10);
+                var password = await bcrypt.hash(passwordRaw,6)
+                await User.update({
+                    password: password
+                },{
+                    where: {id: {[Op.eq]: id}}
+                })
+                
+                cekKaryawan.passwordRaw = passwordRaw
+                return cekKaryawan;
+            }catch(err){
+                console.log(err);
+                throw new UserInputError('Bad Input',{errors})
             }
         },
         registerPermintaanPromosi: async (_,args, {user})=>{

@@ -166,6 +166,7 @@ module.exports={
                 })
                 return kuisioner;
             }catch(err){
+                console.log(err);
                 throw new UserInputError('Bad Input',{errors})
             }
         },
@@ -444,6 +445,7 @@ module.exports={
                 t.commit()
                 return laporan;
             }catch(err){
+                console.log(err);
                 t.rollback()
                 throw err
             }
@@ -473,6 +475,7 @@ module.exports={
                 })
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -499,6 +502,7 @@ module.exports={
                 })
                 return kuisioner;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },

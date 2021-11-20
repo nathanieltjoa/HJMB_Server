@@ -62,23 +62,29 @@ module.exports={
                     var cekLaporan = await PembagianAnggota.findOne({
                         where: {idKaryawan: {[Op.eq]: karyawan}}
                     })
-                    var cekKaryawan = await Karyawan.findOne({
-                        where: {id: {[Op.eq]: karyawan}}
-                    })
-                    cekLaporan = await PembagianAnggota.findOne({
-                        include: [{
-                            model: Karyawan,
-                            as: 'karyawan',
-                            where: {JabatanId: {[Op.eq]: cekKaryawan.JabatanId}}
-                        }],
-                        where: {
-                            groupKaryawan: {[Op.eq]: cekLaporan.groupKaryawan},
-                            ketua: {[Op.eq]: true}
-                        }
-                    })
-                    whereHKu.push({
-                        idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
-                    })
+                    if(cekLaporan !== null){
+                        var cekKaryawan = await Karyawan.findOne({
+                            where: {id: {[Op.eq]: karyawan}}
+                        })
+                        cekLaporan = await PembagianAnggota.findOne({
+                            include: [{
+                                model: Karyawan,
+                                as: 'karyawan',
+                                where: {JabatanId: {[Op.eq]: cekKaryawan.JabatanId}}
+                            }],
+                            where: {
+                                groupKaryawan: {[Op.eq]: cekLaporan.groupKaryawan},
+                                ketua: {[Op.eq]: true}
+                            }
+                        })
+                        whereHKu.push({
+                            idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
+                        })
+                    }else{
+                        whereHKu.push({
+                            idPelapor: {[Op.eq]: karyawan}
+                        })
+                    }
                 }
                 var laporan ={};
                 var laporanBaru = [];
@@ -119,6 +125,7 @@ module.exports={
                 laporan.rows = laporanBaru;
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -152,6 +159,7 @@ module.exports={
                 }))
                 return getKaryawan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -173,6 +181,9 @@ module.exports={
                     var cekLaporan = await PembagianAnggota.findOne({
                         where: {idKaryawan: {[Op.eq]: user.userJWT.id}}
                     })
+                    if(cekLaporan === null){
+                        return null;
+                    }
                     cekLaporan = await PembagianAnggota.findOne({
                         include: [{
                             model: Karyawan,
@@ -184,8 +195,6 @@ module.exports={
                             ketua: {[Op.eq]: true}
                         }
                     })
-                    console.log("Karyawan:");
-                    console.log(cekLaporan);
                     if(status === 0){
                         laporans = await HLaporanStokistPipa.findAndCountAll({
                             where: {
@@ -220,7 +229,7 @@ module.exports={
                         element.namaPelapor = namaKaryawan;
                         laporanBaru.push(element);
                     }))
-                }else if(jabatan.tingkatJabatan === 4){
+                }else if(jabatan.tingkatJabatan === 4 || jabatan.namaJabatan === "Admin"){
                     if(status === 0){
                         laporans = await HLaporanStokistPipa.findAndCountAll({
                             limit: limit
@@ -268,6 +277,7 @@ module.exports={
                     }],
                 });
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -302,6 +312,7 @@ module.exports={
                 }
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -312,6 +323,7 @@ module.exports={
                     where: {status: {[Op.eq]: 0}}
                 });
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -332,6 +344,7 @@ module.exports={
                 });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -352,6 +365,7 @@ module.exports={
                 });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -369,6 +383,7 @@ module.exports={
                     }],
                 });
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -386,6 +401,7 @@ module.exports={
                     }],
                 });
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -551,6 +567,7 @@ module.exports={
                 t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 t.rollback();
                 throw err
             }
@@ -706,6 +723,7 @@ module.exports={
                 t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 t.rollback();
                 throw err
             }
@@ -805,6 +823,7 @@ module.exports={
                 t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 t.rollback();
                 throw err
             }
@@ -1076,7 +1095,6 @@ module.exports={
                         var stokId = cekLaporan.id;
                         counterKMP += 1;
                         idLaporanKMPipa = baseId + pad.substring(0, pad.length - counterKMP.toString().length) + counterKMP.toString();
-                        console.log(idLaporanKMPipa);
                         await LaporanKeluarMasukPipa.create({
                             id: idLaporanKMPipa, LaporanStokId: stokId, terimaLaporan: keterangan,
                             jenisLaporan: 'keluar', jumlahLaporan: element.jumlahPipa
@@ -1152,7 +1170,6 @@ module.exports={
                                         var stokId = cekLaporan.id;
                                         counterKMP += 1;
                                         idLaporanKMPipa = baseId + pad.substring(0, pad.length - counterKMP.toString().length) + counterKMP.toString();
-                                        console.log("ID: "+idLaporanKMPipa);
                                         await LaporanKeluarMasukPipa.create({
                                             id: idLaporanKMPipa, LaporanStokId: stokId, terimaLaporan: keterangan,
                                             jenisLaporan: 'keluar', jumlahLaporan: element.jumlahPipa

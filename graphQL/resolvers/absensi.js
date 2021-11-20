@@ -84,7 +84,6 @@ module.exports={
             var {idKaryawan} = args;
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
-                console.log(idKaryawan);
                 var date = new Date();
                 var y = date.getFullYear(), m = date.getMonth();
                 var firstDay = dayjs(new Date(y, m, 1)).format('YYYY-MM-DD');
@@ -105,7 +104,6 @@ module.exports={
                     },
                     order: [['tanggal','DESC']]
                 })
-                console.log(listAbsensi);
                 return listAbsensi;
             }catch(err){
                 console.log(err);

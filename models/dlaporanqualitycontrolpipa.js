@@ -45,6 +45,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
+    ketebalan:  {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      unique: true,
+    },
     keterangan:  {
       type: DataTypes.STRING,
       allowNull: false,

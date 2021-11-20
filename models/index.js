@@ -23,7 +23,8 @@ if (config.use_env_variable) {
           return next()
         },
     },
-    timezone: '+08:00'
+    timezone: '+08:00',
+    logging: false,
   });
 }
 

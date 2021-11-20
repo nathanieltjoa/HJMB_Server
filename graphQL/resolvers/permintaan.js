@@ -633,6 +633,7 @@ module.exports={
                 }
                 return null;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -660,6 +661,7 @@ module.exports={
                 
                 return permintaans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -731,6 +733,7 @@ module.exports={
                 }
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },

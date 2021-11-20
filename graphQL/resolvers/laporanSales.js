@@ -78,6 +78,7 @@ module.exports={
                 });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -134,6 +135,7 @@ module.exports={
                 }))
                 return getKaryawan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -198,6 +200,7 @@ module.exports={
                 laporan.rows = laporanBaru;
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -285,6 +288,7 @@ module.exports={
                 laporan.rows = laporanBaru;
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -385,6 +389,7 @@ module.exports={
                 await t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 await t.rollback();
                 throw err
             }
@@ -401,6 +406,7 @@ module.exports={
                     where: {id: {[Op.eq]: id}}
                 });
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -412,6 +418,7 @@ module.exports={
                     where: {id: {[Op.eq]: id}}
                 });
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -423,6 +430,7 @@ module.exports={
                     where: {id: {[Op.eq]: id}}
                 });
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -434,6 +442,7 @@ module.exports={
                     where: {id: {[Op.eq]: id}}
                 });
             }catch(err){
+                console.log(err);
                 throw err
             }
         },

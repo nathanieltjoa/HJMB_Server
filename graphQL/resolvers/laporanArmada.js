@@ -81,6 +81,7 @@ module.exports={
                 });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -103,6 +104,7 @@ module.exports={
                     });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -137,6 +139,7 @@ module.exports={
                 }))
                 return getKaryawan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -164,6 +167,7 @@ module.exports={
                 }))
                 return karyawanBaru;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -198,6 +202,7 @@ module.exports={
                 }
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -214,6 +219,45 @@ module.exports={
                     });
                 return laporans;
             }catch(err){
+                console.log(err);
+                throw err
+            }
+        },
+        getPermintaanArmada: async (_,args,{user}) =>{
+            var {status, page, limit} = args;
+            try{
+                if(!user) throw new AuthenticationError('Unauthenticated')
+                page -= 1;
+                var offset = page ? page * limit: 0;
+                var laporans = await HLaporanArmada.findAndCountAll({
+                    include:[{
+                        model: Karyawan,
+                        as: 'armada',
+                    },{
+                        model: Karyawan,
+                        as: 'stokist',
+                    },{
+                        model: Karyawan,
+                        as: 'supir',
+                    },{
+                        model: Karyawan,
+                        as: 'kernet',
+                    },{
+                        model: DLaporanArmada,
+                        as: 'dLaporan',
+                        where: {
+                            diBatalkan: {[Op.eq]: false}
+                        },
+                        required: true
+                    }],
+                    where: {status: {[Op.eq]: status}},
+                    limit: limit,
+                    offset: offset,
+                    order: [['createdAt','DESC']]
+                });
+                return laporans;
+            }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -266,6 +310,7 @@ module.exports={
                 }
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -289,6 +334,7 @@ module.exports={
                     });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -316,6 +362,7 @@ module.exports={
                     });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -343,8 +390,6 @@ module.exports={
                 var status = 1;
                 var laporan = null;
                 var error = false;
-                console.log("masuk");
-		        console.log(dayjs(new Date(null)).format('YYYY-MM-DD'));
 
                 var cekLaporan = await HLaporanArmada.findOne({
                     where: {

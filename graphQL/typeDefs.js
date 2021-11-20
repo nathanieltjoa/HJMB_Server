@@ -106,6 +106,7 @@ module.exports = gql`
       jumlahTarget: Int 
       satuanTarget: String 
       namaPengerjaan: String
+      keteranganTarget: String
       updatedBy: Int 
     }
     type Divisi{
@@ -363,6 +364,10 @@ module.exports = gql`
       idPelapor: Int 
       idKetua: Int 
       totalMix: Int 
+      formulaA: Int 
+      formulaB: Int 
+      formulaC: Int 
+      crusher: Int 
       createdAt: MyDate
       namaPelapor: String
       jumlahBanding: Int 
@@ -374,6 +379,10 @@ module.exports = gql`
       HLaporanMixerPipaId: String 
       totalHasil: Int 
       targetKerja: Int 
+      formulaA: Int 
+      formulaB: Int 
+      formulaC: Int 
+      crusher: Int 
       keterangan: String 
       status: Int 
       pernahBanding: Boolean 
@@ -445,10 +454,10 @@ module.exports = gql`
     type HLaporanQualityControlPipa{
       id: String 
       shift: String 
-      tipeMesin: String 
+      merkPipa: String 
+      ukuranPipa: String 
       idPelapor: Int 
       idKetua: Int 
-      merk: String 
       panjang: Float 
       ketebalan: Float 
       diameterLuar: Float 
@@ -470,6 +479,7 @@ module.exports = gql`
       diameter: Float 
       panjang: Float 
       berat: Float 
+      ketebalan: Float 
       keterangan: String 
       status: Int 
       pernahBanding: Boolean
@@ -1189,6 +1199,11 @@ module.exports = gql`
     getULaporanKetuaArmada(
       id: String
     ): [ULaporanArmada]
+    getPermintaanArmada(
+      status: Int
+      page: Int 
+      limit: Int 
+    ): pageHLaporanAramada
     getHLaporansKetuaArmada(
       status: Int
       page: Int 
@@ -1588,6 +1603,9 @@ module.exports = gql`
       passwordBaru: String
       passwordConfirm: String
     ): User
+    resetPassword(
+      id: Int 
+    ): Karyawan
     uploadFile(
       file: Upload!
       id: Int
@@ -1597,22 +1615,26 @@ module.exports = gql`
     ): File!
     updateTarget(
       jumlahTarget: Int
+      keteranganTarget: String
     ): TargetKerja
     registerMesin(
       id: Int 
       namaMesin: String 
     ): TipeMesin
     updateTargetMixer(
-      targetMixer1: Int
-      targetMixer2: Int
-      targetMixer3: Int
-      targetMixer4: Int
+      namaTarget: String 
+      targetMixer1: Int 
+      keteranganTarget: String 
     ): TargetKerja
     tambahLaporan(
       tipeMesin: String
       jenisMixer: String 
       totalHasil: Int 
       targetMixer: Int
+      formulaA: Int
+      formulaB: Int
+      formulaC: Int
+      crusher: Int
       file: [Upload]
       keterangan: String
       bahanBaku: [bahanBakuInput]
@@ -1625,11 +1647,16 @@ module.exports = gql`
     updateLaporan(
       id: String 
       totalHasil: Int 
+      formulaA: Int
+      formulaB: Int
+      formulaC: Int
+      crusher: Int
       keterangan: String
       bahanBaku: [bahanBakuInput]
     ): HLaporanMixerPipa
     updateTargetProduksiPipa(
       targetProduksi: Int
+      keteranganTarget: String 
     ): TargetKerja
     tambahLaporanProduksiPipa(
       shift: String
@@ -1665,7 +1692,8 @@ module.exports = gql`
     ): HLaporanProduksiPipa
     tambahLaporanQualityControlPipa(
       shift: String 
-      tipeMesin: String 
+      merkPipa: String 
+      ukuranPipa: String
       jamLaporan: String
       file: Upload
       keterangan: String
@@ -1689,8 +1717,6 @@ module.exports = gql`
     ): DLaporanProduksiPipa
     updateHLaporanQualityControlPipa(
       id: String 
-      merk: String 
-      ketebalan: Float
       panjang: Float 
       diameterLuar: Float 
       diameterDalam: Float 

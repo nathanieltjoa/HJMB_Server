@@ -60,24 +60,30 @@ module.exports={
                     var cekLaporan = await PembagianAnggota.findOne({
                         where: {idKaryawan: {[Op.eq]: karyawan}}
                     })
-                    var cekKaryawan = await Karyawan.findOne({
-                        where: {id: {[Op.eq]: karyawan}}
-                    })
-                    cekLaporan = await PembagianAnggota.findOne({
-                        include: [{
-                            model: Karyawan,
-                            as: 'karyawan',
-                            where: {JabatanId: {[Op.eq]: cekKaryawan.JabatanId}}
-                        }],
-                        where: {
-                            groupKaryawan: {[Op.eq]: cekLaporan.groupKaryawan},
-                            ketua: {[Op.eq]: true}
-                        }
-                    })
-
-                    whereHKu.push({
-                        idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
-                    })
+                    if(cekLaporan !== null){
+                        var cekKaryawan = await Karyawan.findOne({
+                            where: {id: {[Op.eq]: karyawan}}
+                        })
+                        cekLaporan = await PembagianAnggota.findOne({
+                            include: [{
+                                model: Karyawan,
+                                as: 'karyawan',
+                                where: {JabatanId: {[Op.eq]: cekKaryawan.JabatanId}}
+                            }],
+                            where: {
+                                groupKaryawan: {[Op.eq]: cekLaporan.groupKaryawan},
+                                ketua: {[Op.eq]: true}
+                            }
+                        })
+    
+                        whereHKu.push({
+                            idPelapor: {[Op.eq]: cekLaporan.idKaryawan}
+                        })
+                    }else{
+                        whereHKu.push({
+                            idPelapor: {[Op.eq]: karyawan}
+                        })
+                    }
                 }
                 var laporan ={};
                 var laporanBaru = [];
@@ -113,6 +119,7 @@ module.exports={
                 laporan.rows = laporanBaru;
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -167,6 +174,7 @@ module.exports={
                 }))
                 return getKaryawan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -184,6 +192,9 @@ module.exports={
                     var cekLaporan = await PembagianAnggota.findOne({
                         where: {idKaryawan: {[Op.eq]: user.userJWT.id}}
                     })
+                    if(cekLaporan === null){
+                        return null;
+                    }
                     cekLaporan = await PembagianAnggota.findOne({
                         include: [{
                             model: Karyawan,
@@ -261,6 +272,7 @@ module.exports={
                 }
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -296,6 +308,7 @@ module.exports={
                 }
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -342,7 +355,7 @@ module.exports={
 
         //HRD
         tambahLaporanQualityControlPipa: async (_,args, {user})=>{
-            var {shift, tipeMesin, jamLaporan, file, keterangan, diameter, panjang, berat, bagianKetebalan} = args;
+            var {shift, merkPipa, ukuranPipa, jamLaporan, file, keterangan, diameter, panjang, berat, bagianKetebalan} = args;
             const t = await sequelize.transaction();
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
@@ -351,6 +364,9 @@ module.exports={
                 var cekLaporan = await PembagianAnggota.findOne({
                     where: {idKaryawan: {[Op.eq]: user.userJWT.id}}
                 })
+                if(cekLaporan === null){
+                    throw new UserInputError('Error',  {errors: `Belum Ada Pembagian Anggota`} )
+                }
 
                 if(cekLaporan.ketua === false){
                     throw new UserInputError('Error',  {errors: `Akun Anda Tidak Memiliki Hak Untuk Buat Laporan`} )
@@ -363,10 +379,7 @@ module.exports={
                 var id = "H" + counterTgl;
                 var idDLaporan = "D" + counterTgl;
                 var idULaporan = "U" + counterTgl;
-                console.log("Sebelum: ")
                 var jamLaporanKu = jamLaporan;
-                console.log("Sesudah: ");
-                console.log(jamLaporanKu);
                 var status = 1;
                 var keteranganBanding = "";
                 var laporan = null;
@@ -375,7 +388,8 @@ module.exports={
                     where: { 
                         id: {[Op.startsWith]: id},
                         shift: {[Op.eq]: shift},
-                        tipeMesin: {[Op.eq]: tipeMesin},
+                        merkPipa: {[Op.eq]: merkPipa},
+                        ukuranPipa: {[Op.eq]: ukuranPipa},
                     }
                 })
                 if(cekLaporan === null){
@@ -386,7 +400,7 @@ module.exports={
                     })
                     id += pad.substring(0, pad.length - cekLaporan.toString().length) + cekLaporan.toString();
                     const hLaporan = await HLaporanQualityControlPipa.create({
-                        id, shift, tipeMesin, idPelapor, idKetua: 0, merk: "", panjang: 0,
+                        id, shift, merkPipa, ukuranPipa, idPelapor, idKetua: 0, panjang: 0,
                         ketebalan: 0, diameterLuar: 0, diameterDalam: 0, totalReject: 0, totalProduksi: 0, 
                         status: 1
                     },{ transaction: t});
@@ -399,10 +413,14 @@ module.exports={
                         }
                     })
                     if(cekDLaporan !== null){
-                        throw new UserInputError('Tidak Bisa Menambah Laporan Lagi',  {errors: `Sudah Ada Laporan Masuk Untuk ${tipeMesin} Untuk Waktu Ini ${tglLaporan} ${jamLaporanKu}`} )
+                        throw new UserInputError('Tidak Bisa Menambah Laporan Lagi',  {errors: `Sudah Ada Laporan Masuk Untuk ${merkPipa} ${ukuranPipa} Untuk Waktu Ini ${tglLaporan} ${jamLaporanKu}`} )
                     }
                 }
-
+                var rataKetebalan = 0;
+                await Promise.all(bagianKetebalan.map(async element => {
+                    rataKetebalan += element.totalBahan;
+                }));
+                rataKetebalan = rataKetebalan / 8;
                 
                 cekLaporan = await DLaporanQualityControlPipa.count({
                     where: {
@@ -414,7 +432,7 @@ module.exports={
                 if(file === null){
                     laporan = await DLaporanQualityControlPipa.create({
                         id: idDLaporan,HLaporanQualityControlPipaId: id, jamLaporan: jamLaporanKu, 
-                        diameter, panjang, berat, keterangan, status, pernahBanding, keteranganBanding, foto: '-'
+                        diameter, panjang, berat, ketebalan: rataKetebalan,keterangan, status, pernahBanding, keteranganBanding, foto: '-'
                     },{transaction: t});
                 }else{
                     const { createReadStream, filename, mimetype, encoding } = await file;
@@ -432,7 +450,7 @@ module.exports={
                                     var foto = `http://localhost:4000/laporan/Quality Control Pipa/${namaFile}`
                                     laporan = await DLaporanQualityControlPipa.create({
                                         id: idDLaporan,HLaporanQualityControlPipaId: id, jamLaporan: jamLaporanKu, 
-                                        diameter, panjang, berat, keterangan, status, pernahBanding, keteranganBanding, foto
+                                        diameter, panjang, berat, ketebalan: rataKetebalan, keterangan, status, pernahBanding, keteranganBanding, foto
                                     },{transaction: t});
                                     resolve();
                                 })
@@ -477,14 +495,33 @@ module.exports={
                 var laporans = await DLaporanQualityControlPipa.findOne({
                     where: {id: {[Op.eq]: id}}
                 })
-                await HLaporanQualityControlPipa.update({idKetua: user.userJWT.id},{
-                    where: {id: {[Op.eq]: laporans.HLaporanQualityControlPipaId}}
-                })
+                var idHLaporan = laporans.HLaporanQualityControlPipaId;
                 if(status === 3){
+                    await HLaporanQualityControlPipa.update({idKetua: user.userJWT.id},{
+                        where: {id: {[Op.eq]: idHLaporan}}
+                    })
                     return await DLaporanQualityControlPipa.update({status: status, pernahBanding: true, keteranganBanding: keteranganBanding},{
                         where: {id: {[Op.eq]: id}}
                     });
                 }else{
+                    laporans = await DLaporanQualityControlPipa.findAll({
+                        where: {HLaporanQualityControlPipaId: {[Op.eq]: idHLaporan}}
+                    })
+                    var rataKetebalan = 0;
+                    var counter = 0;
+                    await Promise.all(laporans.map(async element => {
+                        if(element.status === 2){
+                            counter += 1;
+                            rataKetebalan = rataKetebalan + element.ketebalan; 
+                        }else if(element.id === id){
+                            counter += 1;
+                            rataKetebalan = rataKetebalan + element.ketebalan; 
+                        }
+                    }))
+                    rataKetebalan = rataKetebalan / counter;
+                    await HLaporanQualityControlPipa.update({idKetua: user.userJWT.id, ketebalan: rataKetebalan},{
+                        where: {id: {[Op.eq]: idHLaporan}}
+                    })
                     return await DLaporanQualityControlPipa.update({status: status},{
                         where: {id: {[Op.eq]: id}}
                     });
@@ -513,18 +550,9 @@ module.exports={
                 if(cekLaporan === null){
                     throw new UserInputError('Error',  {errors: `Akun Anda Tidak Memiliki Hak Untuk Laporan Ini`} )
                 }
-                var laporan = await DLaporanQualityControlPipa.update({diameter: diameter, panjang: panjang
-                    , berat: berat, keterangan: keterangan, status: 1},{
-                    where: {id: {[Op.eq]: id}}
-                })
-
-                var counterId = id.replace('D','U').slice(0,9);
-                var cekLaporan = await ULaporanQualityControl.count({
-                    where: {
-                        id: {[Op.startsWith]: counterId}
-                    }
-                })
+                var rataKetebalan = 0;
                 await Promise.all(bagianKetebalan.map( async element => {
+                    rataKetebalan += element.totalBahan;
                     await ULaporanQualityControl.update({
                         namaBagian: element.namaBahan,
                         nilai: element.totalBahan,
@@ -533,6 +561,11 @@ module.exports={
                         transaction: t
                     })
                 }))
+                rataKetebalan = rataKetebalan / 8;
+                var laporan = await DLaporanQualityControlPipa.update({diameter: diameter, panjang: panjang
+                    , berat: berat, ketebalan: rataKetebalan, keterangan: keterangan, status: 1},{
+                    where: {id: {[Op.eq]: id}}
+                })
 
                 t.commit()
                 return laporan;
@@ -543,7 +576,7 @@ module.exports={
             }
         },
         updateHLaporanQualityControlPipa: async (_,args,{user})=>{
-            var {id, merk, ketebalan, panjang, diameterLuar, diameterDalam, totalReject, totalProduksi} = args;
+            var {id, panjang, diameterLuar, diameterDalam, totalReject, totalProduksi} = args;
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
 
@@ -557,8 +590,8 @@ module.exports={
                     throw new UserInputError('Error',  {errors: `Akun Anda Tidak Memiliki Hak Untuk Laporan Ini`} )
                 }
 
-                return await HLaporanQualityControlPipa.update({merk: merk, ketebalan: ketebalan, 
-                    diameterLuar: diameterLuar, diameterDalam: diameterDalam, panjang: panjang,  
+                return await HLaporanQualityControlPipa.update({ diameterLuar: diameterLuar, 
+                    diameterDalam: diameterDalam, panjang: panjang,  
                     status: 2, totalReject: totalReject, totalProduksi: totalProduksi},{
                     where: {id: {[Op.eq]: id}}
                 });

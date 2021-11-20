@@ -72,6 +72,7 @@ module.exports={
                 });
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -122,6 +123,7 @@ module.exports={
                 laporan.rows = laporanBaru;
                 return laporan;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -188,6 +190,7 @@ module.exports={
                 }))
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -268,6 +271,7 @@ module.exports={
                 laporans.namaGudang = gudang.namaGudang;
                 return laporans;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },
@@ -352,6 +356,7 @@ module.exports={
                 await t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 await t.rollback();
                 throw err
             }
@@ -418,6 +423,7 @@ module.exports={
                 await t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 await t.rollback();
                 throw err
             }
@@ -509,6 +515,7 @@ module.exports={
                 await t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 await t.rollback();
                 throw err
             }
@@ -592,6 +599,7 @@ module.exports={
                 }
                 return id;
             }catch(err){
+                console.log(err);
                 throw err
             }
         },

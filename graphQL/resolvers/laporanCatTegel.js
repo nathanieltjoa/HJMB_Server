@@ -265,6 +265,7 @@ module.exports={
                 t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 t.rollback();
                 throw err
             }
@@ -324,6 +325,7 @@ module.exports={
                 t.commit();
                 return laporan;
             }catch(err){
+                console.log(err);
                 t.rollback();
                 throw err
             }

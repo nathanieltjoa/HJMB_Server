@@ -22,6 +22,7 @@ module.exports={
                 })
                 return target;
             }catch(err){
+                console.log(err)
                 throw err
             }
         },
@@ -34,13 +35,13 @@ module.exports={
     Mutation: {
         //General
         updateTarget: async (_,args,{user})=>{
-            var {jumlahTarget} = args;
+            var {jumlahTarget, keteranganTarget} = args;
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 const jabatan = await Jabatan.findOne({
                     where: {id: {[Op.eq]: user.userJWT.idJabatan}}
                 })
-                return await TargetKerja.update({jumlahTarget: jumlahTarget, updatedBy: user.userJWT.id},{
+                return await TargetKerja.update({jumlahTarget: jumlahTarget, updatedBy: user.userJWT.id, keteranganTarget: keteranganTarget},{
                     where: {namaDivisi: {[Op.eq]: jabatan.namaJabatan}}
                 });
             }catch(err){
@@ -48,46 +49,29 @@ module.exports={
             }
         },
         updateTargetMixer: async (_,args,{user})=>{
-            var {targetMixer1, targetMixer2, targetMixer3, targetMixer4} = args;
+            var {namaTarget,targetMixer1, keteranganTarget} = args;
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 const jabatan = await Jabatan.findOne({
                     where: {id: {[Op.eq]: user.userJWT.idJabatan}}
                 })
-                if(targetMixer1 !== -1){
-                    await TargetKerja.update({jumlahTarget: targetMixer1, updatedBy: user.userJWT.id},{
-                        where: {namaPengerjaan: {[Op.eq]: "Mixer 1"}, namaDivisi: {[Op.eq]: jabatan.namaJabatan}}
-                    });
-                }
-                if(targetMixer2 !== -1){
-                    await TargetKerja.update({jumlahTarget: targetMixer2, updatedBy: user.userJWT.id},{
-                        where: {namaPengerjaan: {[Op.eq]: "Mixer 2"}, namaDivisi: {[Op.eq]: jabatan.namaJabatan}}
-                    });
-                }
-                if(targetMixer3 !== -1){
-                    await TargetKerja.update({jumlahTarget: targetMixer3, updatedBy: user.userJWT.id},{
-                        where: {namaPengerjaan: {[Op.eq]: "Mixer 3"}, namaDivisi: {[Op.eq]: jabatan.namaJabatan}}
-                    });
-                }
-                if(targetMixer4 !== -1){
-                    await TargetKerja.update({jumlahTarget: targetMixer4, updatedBy: user.userJWT.id},{
-                        where: {namaPengerjaan: {[Op.eq]: "Mixer 4"}, namaDivisi: {[Op.eq]: jabatan.namaJabatan}}
-                    });
-                }
+                await TargetKerja.update({jumlahTarget: targetMixer1, updatedBy: user.userJWT.id, keteranganTarget: keteranganTarget},{
+                    where: {namaPengerjaan: {[Op.eq]: namaTarget}, namaDivisi: {[Op.eq]: jabatan.namaJabatan}}
+                });
                 return null;
             }catch(err){
                 throw err
             }
         },
         updateTargetProduksiPipa: async (_,args,{user})=>{
-            var {targetProduksi} = args;
+            var {targetProduksi, keteranganTarget} = args;
             try{
                 if(!user) throw new AuthenticationError('Unauthenticated')
                 const jabatan = await Jabatan.findOne({
                     where: {id: {[Op.eq]: user.userJWT.idJabatan}}
                 })
                 if(targetProduksi !== -1){
-                    await TargetKerja.update({jumlahTarget: targetProduksi, updatedBy: user.userJWT.id},{
+                    await TargetKerja.update({jumlahTarget: targetProduksi, updatedBy: user.userJWT.id, keteranganTarget},{
                         where: {namaPengerjaan: {[Op.eq]: "Produksi Per Jam"}, namaDivisi: {[Op.eq]: jabatan.namaJabatan}}
                     });
                 }

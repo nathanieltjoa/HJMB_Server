@@ -159,6 +159,7 @@ module.exports={
             t.commit();
             return laporan;
         }catch(err){
+            console.log(err);
             t.rollback()
             throw err;
         }
@@ -173,6 +174,7 @@ module.exports={
             })
             return pengaruh;
         }catch(err){
+            console.log(err);
             throw err
         }
       },
@@ -188,6 +190,7 @@ module.exports={
             })
             return pengaruh;
         }catch(err){
+            console.log(err);
             throw err
         }
       },
